@@ -54,16 +54,30 @@ However, since part of the premise of [DSL] is to adapt an algorithm for operati
 
 Proposed data model
 -------------------
-A /Node/ is either a /Text Node/ or an /Element/.
+A *Node* is either a *Text Node* or an *Element*.
 
-A /Text Node/ is a /Character/ and /Attribute List/.
+A *Text Node* is a *Character* and possibly an *Attribute List*. The character is effectively immutable, unlike the list. It may be reasonable to permit entire graphemes to be considered single characters (the unicode standard encourages this).
 
-A /Character/ is a character as defined in Unicode.
+A *Character* is a character as defined in Unicode. No sensible mutations exist.
 
-A /String/ is, well, a string of Unicode characters.
+A *String* is, well, a string of Unicode characters. Normally *String*s are altered by replacing them entirely.
 
-An /Attribute List/ is a dictionary in which the keys are /Name/s and the values are /String/s.
+An *Attribute List* is a dictionary in which the keys are *Name*s and the values are *String*s. This is mutated by setting key/value pairs (setting a nonexistent key creates it) and deleting them.
 
-A /Name/ is a pair of /String/s, the first of which is a namespace, and the second of which is a local name. Essentially, this is what [[XMLNS]](http://www.w3.org/TR/xml-names/) calls a QName without the indirection afforded by the short prefixes used there.
+A *Name* is a pair of *String*s, the first of which is a namespace, and the second of which is a local name. Essentially, this is what [[XMLNS]](http://www.w3.org/TR/xml-names/) calls a QName without the indirection afforded by the short prefixes used there. It seems reasonable that these or their component strings be internable, to avoid repeating them all over the place.
 
-An /Element/ is the most complex data item: It is a /Name/, an /Attribute List/, and a linear array of 
+An *Element* is the most complex data item: It is a *Name*, an *Attribute List*, and a linear array of *Node*s. The *Name* is the name of the element, and immutable. The *Attribute List* is the elements attributes, and ordinarily mutable. The array of nodes is mutated by mutating the nodes themselves, adding or deleting nodes, or moving groups of nodes. If *Text Node*s have attributes, *Element*s gain a second *Attribute List* that works the same as the one *Text Node*s have.
+
+*Text Node*s having attributes is not really XML, but is potentially useful to specify who inserted a node, and to implement character-level rich-text formatting with a WYSIWYG editor (it also makes Larus a superset of Etherpad in terms of data model, which would be a good thing). Possibly it would be possible to replace this kind of attribute with elements to indicate when they change, which would require less storage, but I'm not sure if it's less likely to preserve the user's intention in all situations than simply specifying them on each one.
+
+Document Wrapper Schema
+-----------------------
+This was mentioned above as a way of dealing with comments and processing instructions that are outside the root element. Possibly, additional metadata can be stuffed in there. In any case, the basic concept is fairly simple: The root element of the document is a larus:root, which contains the real root element, and anywhere in the document that a comment or PI exists, they are represented by larus:comment and larus:pi elements, the latter having a target attribute that specifies the PI's target.
+
+It seems reasonable that any built-in metadata that Larus supports would be placed there too, with a restricted structure, so that search indexers can find and parse it easily. This is placed in a larus:metadata element, in some manner.
+
+Access Control
+--------------
+Whilst for some purposes allowing anyone to edit anything may be reasonable, this is not always desirable: It may be that a document is meant to be world-readable but only a few people are trusted to edit it, or the document may be not for public consumption at all. Hence, access control is desirable.
+
+It does not take a complex system to be useful: levels of "view", "edit" and "change ACL", with each including the level below, and allowing anonymous users to be given view or edit access, seems to be sufficient; certainly Google Docs, a reasonably successful collaboration system, uses it without issue. Hence, this seems sufficient. If it is not, then delegating the question of who may do what to an external system is the easiest way out and permits integration into other software with its own ideas about that (though in that case changing ACLs should probably only be done through the external system).
