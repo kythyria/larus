@@ -12,17 +12,17 @@ These are supposed to be globally unique; a common method is to put the year of 
 
 <code>comment<code>
 -------------------
-**Appears: **Anywhere
-**Contents: **Character data only
-**Attributes: **None
+**Appears:** Anywhere
+**Contents:** Character data only
+**Attributes:** None
 
 Represents a comment. The characters within the comment become the text contents of the element
 
 <code>pi</code>
 ---------------
-**Appears: **Anywhere
-**Contents: **Character data only
-**Attributes: **<code>target</code>
+**Appears:** Anywhere
+**Contents:** Character data only
+**Attributes:** <code>target</code>
 
 Represents a processing instruction. The target, that is, the token immediately after the <? in normal XML, is represented as the <code>target</code> attribute. Thus
 
@@ -34,9 +34,9 @@ becomes
 
 <code>doctype</code>
 --------------------
-**Appears: **Once, at the start of the document (before the root element, technically)
-**Contents: **<code>elementdecl</code>, <code>attlistdecl</code>, <code>entitydecl</code>, <code>notationdecl</code>, <code>pi</code>, <code>comment</code>
-**Attributes: **<code>name</code>, <code>system</code>, <code>public</code>
+**Appears:** Once, at the start of the document (before the root element, technically)
+**Contents:** <code>elementdecl</code>, <code>attlistdecl</code>, <code>entitydecl</code>, <code>notationdecl</code>, <code>pi</code>, <code>comment</code>
+**Attributes:** <code>name</code>, <code>system</code>, <code>public</code>
 
 Represents a doctype declaration. Larus doesn't actually follow these, but they're in the XML standard and required for proper representation of some common formats. Note that entities are not used by the rest of Larus, so the declarations are only for completeness.
 
