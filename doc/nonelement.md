@@ -12,10 +12,12 @@ These are supposed to be globally unique; a common method is to put the year of 
 
     http://ns.berigora.net/2013/larus/nonelements/0
 
-<code>comment<code>
+<code>comment</code>
 -------------------
 **Appears:** Anywhere
+
 **Attributes:** None
+
 **Contents:** Character data only
 
 Represents a comment. The characters within the comment become the text contents of the element
@@ -23,7 +25,9 @@ Represents a comment. The characters within the comment become the text contents
 <code>pi</code>
 ---------------
 **Appears:** Anywhere
+
 **Attributes:** <code>target</code>
+
 **Contents:** Character data only
 
 Represents a processing instruction. The target, that is, the token immediately after the <? in normal XML, is represented as the <code>target</code> attribute. Thus
@@ -43,11 +47,13 @@ Namespace
     
     http://ns.berigora.net/2013/larus/doctype
 
-<code>doctype</code>
+<code><doctype></code>
 --------------------
 **Appears:** Once, at the start of the document (before the root element, technically)
+
 **Attributes:** <code>name</code>, <code>system</code>, <code>public</code>
-**Contents:** Any combination, or none, of <code>elementdecl</code>, <code>attlistdecl</code>, <code>entitydecl</code>, <code>notationdecl</code>, <code>pi</code>, <code>comment</code>
+
+**Contents:** Any combination, or none, of <code><elementdecl></code>, <code><attlistdecl></code>, <code><entitydecl></code>, <code><notationdecl/></code>, <code><pi></code>, <code><comment></code>
 
 Represents a doctype declaration. Larus doesn't actually follow these, but they're in the XML standard and required for proper representation of some common formats. Note that entities are not used by the rest of Larus, so the declarations are only for completeness.
 
@@ -65,35 +71,43 @@ become, respectively,
 
 There is a nearly one to one mapping between the children of this element and the productions in the XML specification, so I will not repeat exactly what they mean here.
 
-<code>notationdecl</code>
+<code><notationdecl/></code>
 -------------------------
-**Appears:** In <code>doctype</code> elements.
+**Appears:** In <code><doctype></code> elements.
+
 **Attributes:** <code>name<code/>, <code>system</code>, <code>public</code>
+
 **Contents:** None
 
 Represents a notation, which is (so far as the editor of this document can tell) somewhat similar in concept to a mime type--it identifies the format of data that is not XML. Both the <code>system</code> and <code>public</code> attributes are optional: If the only former is present, the keyword SYSTEM is implied, if only the latter, the PUBLIC keyword.
 
-<code>entitydecl</code>
+<code><entitydecl></code>
 -----------------------
-**Appears:** In <code>doctype</code> elements.
+**Appears:** In <code><doctype></code> elements.
+
 **Attributes:** <code>name</code>, <code>type</code>, <code>system</code>, <code>public</code>, <code>notation</code>
+
 **Contents:** Anything except a double quote symbol "
 
-The <code>type</code> attribute is optional, and can have either "general" (the default) or "parameter" as values (the latter is the %entity syntax used inside of DTDs). The <code>system</code> and <code>public</code> attributes form an external identifier as in <code>notationdfecl</code>. <code>notation</code> refers to a <code>notationdecl</code> element, and is only permitted when <code>type="general"</code>. If an external identifier is given, this element must be empty.
+The <code>type</code> attribute is optional, and can have either "general" (the default) or "parameter" as values (the latter is the %entity syntax used inside of DTDs). The <code>system</code> and <code>public</code> attributes form an external identifier as in <code><notationdecl></code>. <code>notation</code> refers to a <code><notationdecl></code> element, and is only permitted when <code>type="general"</code>. If an external identifier is given, this element must be empty.
 
-<code>attlistdecl</code>
+<code><attlistdecl></code>
 ------------------------
-**Appears:** In <code>doctype</code> elements.
+**Appears:** In <code><doctype></code> elements.
+
 **Attributes:** <code>element</code>
-**Contents:** Zero or more <code>attdef</code>
 
-Defines a list of attributes. <code>element</code> is mandatory and identifies which <code>elementdecl</code> this attribute list is paired with.
+**Contents:** Zero or more <code><attdef></code>
 
-<code>attdef</code>
+Defines a list of attributes. <code><element></code> is mandatory and identifies which <code><elementdecl></code> this attribute list is paired with.
+
+<code><attdef></code>
 -------------------
-**Appears:** In an <code>attlistdecl</code> element
+**Appears:** In an <code><attlistdecl></code> element
+
 **Attributes:** <code>name</code>, <code>type</code>, <code>presence</code>, <code>default</code>
-**Contents:** Zero or more <code>attvalue</code>
+
+**Contents:** Zero or more <code><attvalue></code>
 
 Defines an attribute. The <code>type</code> attribute has one of the values (case insensitive)
 
@@ -107,27 +121,33 @@ The <code>presence</code> attribute corresponds to the three strings in the <cod
 
 The <code>default</code> attribute specifies the default, or, in the case of <code>presence="fixed"</code>, only value.
 
-<code>attvalue</code>
+<code><attvalue></code>
 ---------------------
-**Appears:** In <code>attdef</code> elements
+**Appears:** In <code><attdef></code> elements
+
 **Attributes:** None
+
 **Contents:** Anything except left angle bracket, ampersand, or double quote.
 
-Defines a possible value of a notation or enum attribute. If notation, must match the name of a valid <code>notationdecl</code>
+Defines a possible value of a notation or enum attribute. If notation, must match the name of a valid <code><notationdecl></code>
 
-<code>elementdecl</code>
+<code><elementdecl></code>
 ------------------------
-**Appears:** In <code>doctype</code> elements.
+**Appears:** In <code><doctype></code> elements.
+
 **Attributes:** <code>name</code>
-**Contents:** One of <code>any</code>, <code>seq</code>, <code>or</code>, or nothing at all.
 
-Defines an element. The various children correspond to the contentspec production. No child elements means the element must be empty, whilst the <code>any</code> element permits arbitrary content.
+**Contents:** One of <code><any/></code>, <code><seq></code>, <code><or></code>, or nothing at all.
 
-<code>seq</code>, <code>or</code>
+Defines an element. The various children correspond to the contentspec production. No child elements means the element must be empty, whilst the <code><any></code> element permits arbitrary content.
+
+<code><seq></code>, <code><or></code>
 ---------------------------------
-**Appears:** In <code>elementdecl</code>, <code>seq</code>, or <code>or</code>
+**Appears:** In <code><elementdecl></code>, <code><seq></code>, or <code><or></code>
+
 **Attributes:** <code>count</code>
-**Contents:** <code>elemref</code>, <code>seq</code>, <code>or</code>, <code>pcdata</code>
+
+**Contents:** <code><elemref></code>, <code><seq></code>, <code><or></code>, <code><pcdata/></code>
 
 Represent the <code>(elem,elem)</code> and <code>(elem|elem)</code> constructs in an element declaration respectively. That is, a sequence of elements, or a choice of one. The <code>count</code> attribute corresponds to the appended sigil:
 
@@ -135,26 +155,32 @@ Represent the <code>(elem,elem)</code> and <code>(elem|elem)</code> constructs i
     + atleastonce
     ? atmostonce
 
-<code>elemref</code>
+<code><elemref></code>
 --------------------
-**Appears:** In <code>seq</code>, or <code>or</code>
+**Appears:** In <code><seq></code>, or <code><or></code>
+
 **Attributes:** <code>name</code>, <code>count</code>
+
 **Contents:** None
 
 Indicates the presence of an element is acceptable at this point in an element's content model. Correspondingly, the <code>name</code> attribute gives the name of the element being permitted, whilst <code>count</code> is the same as on the previous two elements.
 
-<code>pcdata</code>
+<code><pcdata/></code>
 -------------------
-**Appears:** In <code>elementdecl</code>, <code>seq</code>, or <code>or</code>
+**Appears:** In <code><elementdecl></code>, <code><seq></code>, or <code><or></code>
+
 **Attributes:** None
+
 **Contents:** None
 
 Indicates character data is permitted at this point in an element's content model. There is no count specifier, since that wouldn't make sense (and the XML spec effectively only permits <code>atleastzero</code> anyway)
 
-<code>any</code>
+<code><any/></code>
 ----------------
-**Appears:** In <code>elementdecl</code>
+**Appears:** In <code><elementdecl/></code>
+
 **Attributes:** None
+
 **Contents:** None
 
 Indicates that anything is permitted as the child of an element.
