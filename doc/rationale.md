@@ -1,6 +1,5 @@
-Requirements
+Rationale
 ============
-(this document is as much a rationale as requirements, technically)
 
 Whilst to be useful Larus must be more than a set of algorithms for performing synchronisation, nonetheless those algorithms are the core. Hence, they will be considered first.
 
