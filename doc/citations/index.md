@@ -42,7 +42,9 @@ http://dl.acm.org/citation.cfm?doid=215585.215706
 
 WML-waveot.html
 ---------------
+**Google Wave Operational Transformation**
+David Wang, Alex Mah, Soren Lassen
 
 http://wave-protocol.googlecode.com/hg/whitepapers/operational-transform/operational-transform.html
 
-Not really an academic paper, just a note on a real-world implementation of the preceding.
+Not really an academic paper, just a note on a real-world implementation of the preceding. Note that the copy in the repository has (*almost* losslessly) reduced copies of the images embedded into it, to eliminate external dependencies.

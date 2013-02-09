@@ -1,0 +1,956 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="Docutils 0.4.1: http://docutils.sourceforge.net/" />
+<title>Google Wave Operational Transformation</title>
+<meta name="authors" content="David Wang  Alex Mah  Soren Lassen" />
+<style type="text/css">
+
+/*
+:Author: David Goodger
+:Contact: goodger@users.sourceforge.net
+:Date: $Date: 2005-12-18 01:56:14 +0100 (Sun, 18 Dec 2005) $
+:Revision: $Revision: 4224 $
+:Copyright: This stylesheet has been placed in the public domain.
+
+Default cascading style sheet for the HTML output of Docutils.
+
+See http://docutils.sf.net/docs/howto/html-stylesheets.html for how to
+customize this style sheet.
+*/
+
+/* used to remove borders from tables and images */
+.borderless, table.borderless td, table.borderless th {
+  border: 0 }
+
+table.borderless td, table.borderless th {
+  /* Override padding for "table.docutils td" with "! important".
+     The right padding separates the table cells. */
+  padding: 0 0.5em 0 0 ! important }
+
+.first {
+  /* Override more specific margin styles with "! important". */
+  margin-top: 0 ! important }
+
+.last, .with-subtitle {
+  margin-bottom: 0 ! important }
+
+.hidden {
+  display: none }
+
+a.toc-backref {
+  text-decoration: none ;
+  color: black }
+
+blockquote.epigraph {
+  margin: 2em 5em ; }
+
+dl.docutils dd {
+  margin-bottom: 0.5em }
+
+/* Uncomment (and remove this text!) to get bold-faced definition list terms
+dl.docutils dt {
+  font-weight: bold }
+*/
+
+div.abstract {
+  margin: 2em 5em }
+
+div.abstract p.topic-title {
+  font-weight: bold ;
+  text-align: center }
+
+div.admonition, div.attention, div.caution, div.danger, div.error,
+div.hint, div.important, div.note, div.tip, div.warning {
+  margin: 2em ;
+  border: medium outset ;
+  padding: 1em }
+
+div.admonition p.admonition-title, div.hint p.admonition-title,
+div.important p.admonition-title, div.note p.admonition-title,
+div.tip p.admonition-title {
+  font-weight: bold ;
+  font-family: sans-serif }
+
+div.attention p.admonition-title, div.caution p.admonition-title,
+div.danger p.admonition-title, div.error p.admonition-title,
+div.warning p.admonition-title {
+  color: red ;
+  font-weight: bold ;
+  font-family: sans-serif }
+
+/* Uncomment (and remove this text!) to get reduced vertical space in
+   compound paragraphs.
+div.compound .compound-first, div.compound .compound-middle {
+  margin-bottom: 0.5em }
+
+div.compound .compound-last, div.compound .compound-middle {
+  margin-top: 0.5em }
+*/
+
+div.dedication {
+  margin: 2em 5em ;
+  text-align: center ;
+  font-style: italic }
+
+div.dedication p.topic-title {
+  font-weight: bold ;
+  font-style: normal }
+
+div.figure {
+  margin-left: 2em ;
+  margin-right: 2em }
+
+div.footer, div.header {
+  clear: both;
+  font-size: smaller }
+
+div.line-block {
+  display: block ;
+  margin-top: 1em ;
+  margin-bottom: 1em }
+
+div.line-block div.line-block {
+  margin-top: 0 ;
+  margin-bottom: 0 ;
+  margin-left: 1.5em }
+
+div.sidebar {
+  margin-left: 1em ;
+  border: medium outset ;
+  padding: 1em ;
+  background-color: #ffffee ;
+  width: 40% ;
+  float: right ;
+  clear: right }
+
+div.sidebar p.rubric {
+  font-family: sans-serif ;
+  font-size: medium }
+
+div.system-messages {
+  margin: 5em }
+
+div.system-messages h1 {
+  color: red }
+
+div.system-message {
+  border: medium outset ;
+  padding: 1em }
+
+div.system-message p.system-message-title {
+  color: red ;
+  font-weight: bold }
+
+div.topic {
+  margin: 2em }
+
+h1.section-subtitle, h2.section-subtitle, h3.section-subtitle,
+h4.section-subtitle, h5.section-subtitle, h6.section-subtitle {
+  margin-top: 0.4em }
+
+h1.title {
+  text-align: center }
+
+h2.subtitle {
+  text-align: center }
+
+hr.docutils {
+  width: 75% }
+
+img.align-left {
+  clear: left }
+
+img.align-right {
+  clear: right }
+
+ol.simple, ul.simple {
+  margin-bottom: 1em }
+
+ol.arabic {
+  list-style: decimal }
+
+ol.loweralpha {
+  list-style: lower-alpha }
+
+ol.upperalpha {
+  list-style: upper-alpha }
+
+ol.lowerroman {
+  list-style: lower-roman }
+
+ol.upperroman {
+  list-style: upper-roman }
+
+p.attribution {
+  text-align: right ;
+  margin-left: 50% }
+
+p.caption {
+  font-style: italic }
+
+p.credits {
+  font-style: italic ;
+  font-size: smaller }
+
+p.label {
+  white-space: nowrap }
+
+p.rubric {
+  font-weight: bold ;
+  font-size: larger ;
+  color: maroon ;
+  text-align: center }
+
+p.sidebar-title {
+  font-family: sans-serif ;
+  font-weight: bold ;
+  font-size: larger }
+
+p.sidebar-subtitle {
+  font-family: sans-serif ;
+  font-weight: bold }
+
+p.topic-title {
+  font-weight: bold }
+
+pre.address {
+  margin-bottom: 0 ;
+  margin-top: 0 ;
+  font-family: serif ;
+  font-size: 100% }
+
+pre.literal-block, pre.doctest-block {
+  margin-left: 2em ;
+  margin-right: 2em ;
+  background-color: #eeeeee }
+
+span.classifier {
+  font-family: sans-serif ;
+  font-style: oblique }
+
+span.classifier-delimiter {
+  font-family: sans-serif ;
+  font-weight: bold }
+
+span.interpreted {
+  font-family: sans-serif }
+
+span.option {
+  white-space: nowrap }
+
+span.pre {
+  white-space: pre }
+
+span.problematic {
+  color: red }
+
+span.section-subtitle {
+  /* font-size relative to parent (h1..h6 element) */
+  font-size: 80% }
+
+table.citation {
+  border-left: solid 1px gray;
+  margin-left: 1px }
+
+table.docinfo {
+  margin: 2em 4em }
+
+table.docutils {
+  margin-top: 0.5em ;
+  margin-bottom: 0.5em }
+
+table.footnote {
+  border-left: solid 1px black;
+  margin-left: 1px }
+
+table.docutils td, table.docutils th,
+table.docinfo td, table.docinfo th {
+  padding-left: 0.5em ;
+  padding-right: 0.5em ;
+  vertical-align: top }
+
+table.docutils th.field-name, table.docinfo th.docinfo-name {
+  font-weight: bold ;
+  text-align: left ;
+  white-space: nowrap ;
+  padding-left: 0 }
+
+h1 tt.docutils, h2 tt.docutils, h3 tt.docutils,
+h4 tt.docutils, h5 tt.docutils, h6 tt.docutils {
+  font-size: 100% }
+
+tt.docutils {
+  background-color: #eeeeee }
+
+ul.auto-toc {
+  list-style-type: none }
+
+</style>
+</head>
+<body>
+<div class="document" id="google-wave-operational-transformation">
+<h1 class="title">Google Wave Operational Transformation</h1>
+<table class="docinfo" frame="void" rules="none">
+<col class="docinfo-name" />
+<col class="docinfo-content" />
+<tbody valign="top">
+<tr><th class="docinfo-name">Authors:</th>
+<td>David Wang
+<br />Alex Mah
+<br />Soren Lassen</td></tr>
+<tr><th class="docinfo-name">Version:</th>
+<td>1.1 - July 2010</td></tr>
+</tbody>
+</table>
+<p>This whitepaper is part of a series. All of the whitepapers
+can be found on <a class="reference" href="http://www.waveprotocol.org/whitepapers">Google Wave Federation Protocol site</a>.</p>
+<p>Waves are hosted, structured documents that allow seamless and low latency concurrent
+modifications.  To provide this live experience, Google Wave uses the Operational
+Transformation (OT) framework of concurrency control.</p>
+<div class="section">
+<h1><a id="executive-summary" name="executive-summary">Executive Summary</a></h1>
+<p>Collaborative document editing means multiple editors are able to edit a
+shared document at the same time. It is live and concurrent when a user can see
+the changes another person is making, keystroke by keystroke.
+Google Wave offers live concurrent editing of rich text documents.</p>
+<p>The result is that Google Wave allows for a very engaging conversation where you can
+see what the other person is typing, character by character, much like how you
+would converse in a cafe. This is very much like instant messaging except you
+can see what the other person is typing, live. Google Wave also allows for a more
+productive collaborative document editing experience, where people don't have
+to worry about stepping on each others toes and still use common word processor
+functionalities such as bold, italics, bullet points, and headings.</p>
+<p>Waves are more than just rich text documents. In fact, Google Wave's core technology
+allows live concurrent modifications of structured documents which can be used to
+represent any structured content including system data that is shared between
+clients and backend systems.</p>
+<p>To achieve these goals, Google Wave uses a concurrency control system based on
+Operational Transformation.</p>
+</div>
+<div class="section">
+<h1><a id="introduction" name="introduction">Introduction</a></h1>
+<p>Operational transformation (OT) is a theoretical framework of concurrency
+control that has been continuously researched in the context of group editing
+for more than 10 years. This document does not describe the basic theory of OT
+and assumes the reader understands OT. The reader is encouraged to read the
+documents in the reference section for background.</p>
+<p>In short, Wave OT replicates the shared document at all sites and allows any
+user to edit any part of the document at any time. Local editing operations are
+executed without being delayed or blocked. Remote operations are transformed
+before execution. The lock-free, non-blocking property of OT makes the local
+response time insensitive to networking latencies. These properties of OT play
+a big part in providing the Optimistic User Interface (UI) of Wave. Optimistic
+UI means user actions are executed and displayed locally to the user
+immediately without waiting for the server to respond.</p>
+<p>The starting point for Wave OT was the paper &quot;High-latency, low-bandwidth
+windowing in the Jupiter collaboration system&quot;. Like the Jupiter system
+described by the paper, Google Wave also implements a client and server based OT
+system. The reader is again encouraged to read this paper for background.</p>
+<p>This document describes the extensions Google Wave made to the basic theory of OT.</p>
+</div>
+<div class="section">
+<h1><a id="wave-extensions-to-operational-transformation" name="wave-extensions-to-operational-transformation">Wave Extensions to Operational Transformation</a></h1>
+<p>A wave is a collection of wavelets. A wavelet contains a collection of documents.
+A document consists of a structured, XML-like document and some annotations.
+A wavelet is where concurrent modification takes place.
+A wavelet is the object on which OT is applied.</p>
+<div class="section">
+<h2><a id="clients-wait-for-acknowledgement-from-server-before-sending-more-operations" name="clients-wait-for-acknowledgement-from-server-before-sending-more-operations">Clients wait for acknowledgement from server before sending more operations</a></h2>
+<p>To recap, under the basic theory of OT, a client can send operations
+sequentially to the server as quickly as it can. The server can do the same.
+This means the client and server can traverse through the state space via
+different OT paths to the same convergent state, depending on when they receive
+the other parties' operations. See diagram below.</p>
+<img src="data:image/png;base64,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
+RU5ErkJggg==" />
+<p>When you have multiple clients connected to the server, every client and server
+pair have their own state space. One shortcoming of this is the server needs
+to carry a state space for every connected client, which can be
+memory-intensive. In addition, this complicates the server algorithm by
+requiring it to convert clients' operations between state spaces.</p>
+<p>Having a simple and efficient server is important in making waves reliable and
+scalable. With this goal, Wave OT modifies the basic theory of OT by requiring
+the client to wait for acknowledgement from the server before sending more
+operations. When a server acknowledges a client's operation, it means the
+server has transformed the client's operation, applied it to the server's copy
+of the wavelet and broadcast the transformed operation to all other connected
+clients. Whilst the client is waiting for the acknowledgement, it caches
+operations produced locally and sends them in bulk later.</p>
+<p>With the addition of acknowledgements, a client can infer the server's OT path.
+We call this the inferred server path. By having this, the client can send
+operations to the server that are always on the server's OT path.</p>
+<p>This has the important benefit that the server only needs to have a single
+state space, which is the history of operations it has applied. When it
+receives a client's operation, it only needs to transform the operation against
+the operation history, apply the transformed operation, and then broadcast it.</p>
+<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAiAAAAHICAMAAABAqKFcAAAC/VBMVEUAAQAB
+AC8DBgIGAEAAAkAAAlEAAmIHCgYAAXQAAIMtAAEAAZFCAABBAAMNDww8AD5P
+AQISFBFeAAAVFxRrAAAZGxl5AgCKAAAdHxwkJSMALlgALncALogrLCoAL5Uy
+MzFZLQH/AAD/AAcAQXNELm5eLEA3OTb/AhQAQZkAQaF5LgETQIA+QD0AS40A
+S5+VLwAPT3ZzPQJnQQEAUowAVYRHSEZoQFqHQAD/GxT/HR2SQQBOUE2gQQD/
+ISaaQwAAYa9yTkFUVlN4UC0rYJaKUwD/Li1zWEFdX1yFVlw+Zo8fbp4Adbn/
+ODmpWQCNXElkZmNFbX3/PkSkXCtDbaRjZo5da5KRZjZsbmusZgCNaUizZgB4
+cFn/SklzdXImhsWRb3D/UlUdic6hcU61cwBIg66ldEBbgpBAhrv/WFZ7fXr/
+Wl0tktFnhLT/YV9GjsmDhYJuiZ//aGhslJFMmNOLjYrBhTxelcOzhmW0h1q2
+iVH/cXHMiC6dkW5SntKzkGaikZluncGVl5TPkSzOkEL/fHvTkj6OncG7mmnO
+mEycn5zSl1v/h4hvq9mvpnT/joulp6THoo2QrcPCpoHXo3GqrKnQqIP/mZnd
+qmCKt9t4u+rZq3awsq+ZvcO1t7T/pKS5tsTNuLe8vrv/rKzouXHLvpnYvZWM
+y/C/wr7pvYKkyuaVzu3Sw6elzNvUwrfCxs//t7bAx9uzy93Hycaf0/DNz8z/
+wsPC1dSx2tbo0ZXx0ZDu0KPT1NHQ18b00Zis3fm03PD50onZ18Hs1bHW2NX/
+zcvs1sbE4evb3dn43a7e4N3/19jO4/Lz3rm/6Prx38PH6tL44Knk5eL/4d/m
+6Ovn6ebi6fXI8fP/57rH8f/R7/n+5+Xs7erc8P3k9df/6+7978/47+XS+P/x
+8+Lw8u//8sv/88Tx98v98trz8vna++7e+f/+8vL4+NT+98719/Pv+Pz3+vb1
++/3v/f/p//3/+fj+/eH6/Pny/////Pv7/+///u77/vr//vX5///+//zCBm25
+AAAhFUlEQVR42u3dD3xT1b0A8NOwEiwlEkqxnba12V5R1qfbsE9Z+fP6hq9z
+4ro9t/XNUUYHTquTzhH/DPWNrLBRi3ZuFWFZddFBAbcpIbpBVpgGTYPCTImj
+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
+a4gQEfF6xOtDIplf5+UqOF0CIUJcGBVwunEFCLv5yTuvTyDYbnYZDXxOvPsN
+BhdHfaBOgRAhRgOfCTOLDcYUOwYgyr5rU6oZISOPV7sHjQiZU00IgCjafmQY
+DAQIjxVmygkQgyFj6DbkYPI9/d+vXib9RK2Ttl7y2OpS+u+OzM4h1q8ff/yx
+0sEPnXy1R7ddjCufEDHxlx5CNBEe+bFOwTyJxh/v+76iVPqZzv/uSEwgPUMB
++VTT/lcHP/S3ifoFQgaDJUYjf4XubEZjcczBc/u0H0/ZQD76R1DCyh4CpOHf
+1pNHG771VGLTm19Etx3qXYKfTUpY2dn+vde/RhZvvrOzd9mj6LYvRFqd+nHf
+RZ95u+GzTbjr+2vpAxuT0W1H6j916Nm1+OT30ae3kKd8HCXu3pmM7uzULxBy
+M5LVwd02OcpDsRfWj2u+a14PfijhD79C2yuWH0T30KagHiU+827S0je+cM25
+6JLn0DO/R8tPTNq65PrOrtmLDvYt++0v0BORp0Ff/ev8Cf+c+gQ+iLZHfl75
+8pRFBMjPFp2fe/Xrj6Jd9ehzzvmZH/7f+G09egbCX7xWJbl4ybyezQlNraQV
+6X5ky5rE5NsjXUV9wj685opz+D3058iSP9xI2ok1mR9P2rojoemjpF29y6aR
+tmfJ/ZEuZsI5/FHSpseu63yOfIfxY9d34s0/JEAqSuvRLtx+1fL6hCZcn9ik
+7y4m8vfKVx/zyvRGyWHnFERi7YnkTdHxCOoFMq6J/kDit5El0dWuI0BOT9vw
+0hXn+pZtHThIbZ28tT7hH3csIj92zV0eHYNEgNBYtmNiJ31a+kXXQBxmH18+
+XsMuiV5vc+LrbveSzNP0o/7l7tW3/wWt7wNSkfnJqWMvRJf8eepa8exbr9Kj
+mIdumr984LLoYQr93FuTN7Vf9ePkXeTH7rtux/jNn0eA7EjY1xL64zsAJBK1
+5jq+fOwh4yJzTCFdc2+nny7aPfffj+xEW8kgdUnkmIYC2ZywvXtN4r+iS+66
+5sjJafMokAZEup/+Zc3vJkcHqWht90Pjm0mzcw3tYfBLCbtPTrudHMVUlJ6Y
+/HDPTrSpD8iEI3oGUmt2cueDVKEz18ZY4WASHVGenrb8g6kILe0k8yAfTaad
+Q33icdz9E9IzbMHRJR/MQOia461TtuP2m+d19i07SHue3kEqQglbyOFP0hPR
+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" />
+<p>One trade-off of this simplification is that a client will see chunks of operations
+from another client in intervals of approximately one round trip time to the
+other client. We believe the server-side benefits make this a worthwhile trade-off.</p>
+</div>
+</div>
+<div class="section">
+<h1><a id="wavelet-operations" name="wavelet-operations">Wavelet Operations</a></h1>
+<p>Wavelet operations consist of document operations, for modifying documents,
+and non-document operations, for tasks such
+as adding or removing a wavelet participant. We'll focus on document
+operations here.</p>
+<div class="section">
+<h2><a id="document-support" name="document-support">Document Support</a></h2>
+<p>A document operation has a streaming interface, similar to an
+XMLStreamWriter or a SAX handler. The document operation consists of a sequence
+of ordered document mutations. The mutations are applied in sequence as you
+traverse the document linearly.</p>
+<p>Designing document operations in this manner makes it easier to write the
+transformation function and composition function described later.</p>
+<p>A wave document can be regarded as a single
+document operation that can be applied to the empty document.</p>
+<p>In Google Wave, every character, start tag or end tag in a document is called an item. Gaps
+between items are called positions. Position 0 is before the first item. A
+document operation can contain mutations that reference positions. For example,
+a &quot;Retain&quot; mutation specifies how many positions to skip ahead in the
+document before applying the next mutation.</p>
+<img alt="img/doc-items.png" src="data:image/png;base64,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" />
+<p>Wave document operations also support annotations. An annotation is some
+meta-data associated with an item range, i.e., a start position and an end
+position. This is particularly useful for describing text formatting and
+spelling suggestions, as it does not unecessarily complicate the underlying structured
+document format.</p>
+<img alt="img/annotations.png" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAb4AAACwCAMAAABHLvsfAAACNFBMVEUAAAAAAAAXFxcgICAjIyMnJycfGdAkHtEuLi4pI9IzMzM1NTX/AAA3Nzc4ODj+BQX/BgY8PDz9Cgo+
+Pj5BQUFERERISEhKSkpMTExPT09SUlJTU1NVVVVYWFhbW1tdXV1eXl5fX19hYWFjY2NkZGRlZWVmZmZnZ2doaGhpaWlsbGxtbW1vb29wcHBycnJzc3N0dHR1dXV2dnZ3d3d4
+eHh5eXl6enp7e3t8fHx9fX1/f3+AgICBgYGCgoKDg4OEhISFhYWGhoaHh4fwa2uIiIiJiYmKioqLi4v0b2+MjIyNjY2Ojo6Kh+aPj4+QkJCRkZGSkpKUlJSVlZWWlpb/enqX
+l5eYmJiZmZmbm5ucnJydnZ2enp6fn5+goKChoaGjo6OkpKSlpaWmpqanp6eoqKipqamqqqqrq6usrKytra2urq6vr6+wsLCxsbGysrKzs7O0tLS1tbW2tra3t7e4uLi5ubm6
+urq7u7u8vLy9vb2+vr6/v7/AwMDBwcHCwsLDw8PExMTFxcXGxsbHx8fIyMjJycnKysrLy8vMzMzNzc3Ozs7Pz8/Q0NDR0dHS0tLT09PU1NTV1dXW1tbX19fY2NjZ2dna2trb
+29vc3Nzd3d3e3t7f39/g4ODh4eHi4uLj4+Pk5OTl5eXm5ubn5+fo6Ojp6enq6urr6+vs7Ozt7e3u7u7v7+/w8PDx8fHy8vLz8/P09PT19fX29vb39/f4+Pj5+fn6+vr7+/v8
+/Pz9/f3+/v7///8xhhqvAAAAAXRSTlMAQObYZgAAED9JREFUeNrtnf9DE2eex31mbtoc182WPZJLWMBu2/VuPc/2OKuX1dqFvXS3peWu17VszrZodRFXQcWlAWKCAYUavqMQ
+iIHIkC+EQAjDwDA8/9w9z2QSvmiFySQU9fP5gSTz5Z3n+bzm+TIzYd6HDh06hCFe1DgE+AAfxE+Ob0MJOeege4PO/ulsw0cV16U1EmIOsbq6tiZJ62lt0NkHnW34iCjRFFeE
+1FIymVzUHMmlpdTyCtVel0Cn8DqE4MZWfPL62sry0sL8XCwaDc9qjXAkGovPLySXV8gRAjqF1xHXJHkTn0JvaQHpjUQytby0CDqF1llIraj8VHyUXhTpnAahSDyRmI+DTqF1
+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" />
+<p>Wave document operations consist of the following mutation components:</p>
+<ul class="simple">
+<li>retain</li>
+<li>insert characters</li>
+<li>insert element start</li>
+<li>insert element end</li>
+<li>delete characters</li>
+<li>delete element start</li>
+<li>delete element end</li>
+<li>replace attributes</li>
+<li>update attributes</li>
+<li>annotation boundary</li>
+</ul>
+<p>The following is a more complex example document operation.:</p>
+<pre class="literal-block">
+retain 3
+insert element start with tag &quot;p&quot; and no attributes
+insert characters &quot;Hi there!&quot;
+insert element end
+retain 5
+delete characters 4
+retain 2
+</pre>
+<p>From this, one can see how an entire document can be represented as a
+single document operation.</p>
+</div>
+<div class="section">
+<h2><a id="transformation-function" name="transformation-function">Transformation Function</a></h2>
+<p>Representing document operations using a stream interface has the benefit that
+it makes processing operations in a linear fashion easy.</p>
+<img alt="img/transformation.png" src="data:image/png;base64,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" />
+<p>The operation transformer works by taking two streaming operations as input,
+simultaneously processing the two operations in a linear fashion, and
+outputting two streaming operations. This stream-style processing ensures that
+transforming a pair of very large operations is efficient.</p>
+</div>
+<div class="section">
+<h2><a id="composition" name="composition">Composition</a></h2>
+<p>The document operations have been engineered so that they can be composed
+together and the composition of any two document operations that can be
+composed together is itself a single document operation.</p>
+<p>Furthermore, the composition algorithm processes operations as linear streams,
+so the composition algorithm is efficient.</p>
+<img alt="img/composition.png" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAfYAAACbCAAAAAC1neZQAAAJB0lEQVR42u3dW2gcVRgH8E93t6VtCGnNpUkTQ1EUbcCKKEIpFLQl2KwVKdhUkSjJk9hg6o3qi7d4AYkPRSnU
+25NCwWKt1TzY+KIVHwTBojGhIaa22aSxanPZNNG/D3POXHa3jbOd2d0z+z8P3e7OzJl0fznzze53ej4BWxk24VtAdrZCv/0iIpkIko+RkN3wUSfhG5G9BNgFkL6mGI5tSDQf
+gIgoFfdz6WuKYfHZmhXt08CpHRXLW1OA9K6uO9y7pq7f6uOd5sStPwKzD6+se0PIbgJ7+yRQfSg92ukycT+X9kngxbvH/u54DNhwfPavngcB6Z4+uKp7+mCL1cfOsZkXbgf2
+JidSbWQ3IbbLGQDXvjXqMXE/lzMAmn8CxuusjTM1gEwhLVNIxyz2c8BMHFg3DAyR3YjRDgDfJ6ubDrtM3M8FAOKx2NVyFXBi8yqRq6wXxe5A7xdbBBbIbgw7gGNrvSb2cwGA
+pjHr1caPz//7l1yKvYGj3Sj2XSfnj9YAVb+ore7nAgCvtA4t/NQOXPNJ+tQDl2TvSU5OJMluDPtHN8Zb+oGXK5SK+7kAwD+9zYmNh4Aj18XXv31J9pmHVtS+miB7Gbaf15O9
+3NrjU2fbniB7ubX9tRW7L5CdjexsZCc7G9nZSs1IyM6hSXaj21xnZWXXHCCv1a58JA07oS59TTGdVVf5dtfOKq9eaHb+rgTVeu5JjW/dC8g946nWp52EurRPurLq6j23d1Z5
+9eDZRaTirpOXOSjQeCOhxC8TWsOvwC8NgAwBg+uchLqcUTvM1Lgya3pnlVcPgR3486WNSzEx2GS1aX+7xxaBhTgg6lEn1AXwZtXtPHo8kCFyaXakl9mhxprUZZ9PnHiTa/7W
+xZ7qqjddocg14UuFML3J7jeM+FWENrB1xOdoV6NchoDBRiehLoA3qw5x7Rwm+58v3mGHGs+kLs9FOdf8rX3bfvuj2xWKXBO+VAjTm5x+Q4hfhUffIl0+D9mbnEi1PgnI9lSq
+9RknoS6Ak1XX+XZ75/DYRaRhxA41nkldXvYc87caB71xyzXhS/2+6k1OvyHEr8Kji/gc7JjrrKzsnAPk9dqVHXNOQl0AJ6uu8+32ziGO9n+HNh+xQ03GpC7x/DVr/lZswRu3
+4MwFUC/pTU6/IcSvwqP7HuxFu7W5TGwfrb+gQw2sSV3xWeBcbvaGHKPdFYo0uwphehPsyWIhxK+Co/sf7KXIjvsP6FCjJnXd9sLM6Z2WkY43ueZvPbdt7PwebyjS7CqE6U2q
+33DiV8HR8x/sJcX+5W061KhJXT/cGm/ab1nreJNr/tbF7jWr+7yhSLOrEKY3qX6DiF9SkHY5dP+HRuP73iXmb4X7S032orAvPX8rbPYCvFkS1kXeWPal529Flj2AWzqTL/LF
+/YdIUc9xhR/gyG4me55f15DddPa8vpwlu/nseaRiyB4Fdt+JV7JHg50XebKTnexkJzvZA7o9Ins02H1+GCJ7FNh9f/VBdvPZ8/iik+yms+eV1iC72ex5JjHJbjJ73lMWyG4u
++xVMUCoMe2Qa2cnOi7zvc5j5Gm/pyM4PcGTn1zVkLwZ8F9nLjt2YVAzZg24pspcjOy/yZCc72clOdrKTnexkJzvZyU52spOd7GQnO9mjy855Qn7Y2cgetbcrKq8Bn7csu/mz
+JTXtP0ogkBQqJEaZ/UT98fRX9d/9H3aQPTLsO94D8O59QVVeIrsZ7NUpAOM1QVVeIrsZ7LFFAIvxoCovkd2g0Z6qCaryEtnNYL/3fQDv7Qiq8hLZzWD/Zu3x+eNrvw2q8hLZ
+DfncfmRD4qZPEVTlJbIbwu77ozk/t5Od7GQnu3nsIDvZyU52spOd7FFg/2Ljshs+JHuZsZ+o/3J+uIPsOdmjO0vo3g+sRzuR3ru67nDvmrp+JwGvNx3bkGg+kJGPj/KbFWX2
+arUwgp1I754+uKp7+mCLk4DXm6oPpUc7M/Lx5TVGTL1sZb8WW7Qe7UT6FNIyhXTMScDrTde+NQrkyMdHMvhFnP2aCYdfJ9J1SXH1kt70fbK66XBGPp7sZrLr2O5OpGt2lYDX
+mwAcW5uRjye7mezf1PfPD3d4E+maXSXg9aZdJ+eP1mTk48luJjs+v2XZ9R94E+maXSXg9aaPboy39Gfk48luKPtldg/qHGQnO9nJTvbSYwfZyU52spOd7GQnO9nJTnayk53s
+ZCc72clOdjPZOamK7GQv34u8oe8W2clOdrKTnexkJzvZyU52spOd7GQnO9lLiYrsRT3H6Z1VyzcdyYdKrkiX7MGeY9pfj5v2nUt/1RoaO0d7Qc4xsHXEX4+JWetRr6Jxsae6
+6s3sOhbpjpV1b6iTW+tuqJIXfU0x+1hVDMOzZofTxezDThdkD/IcA1uky2ePdz51CoCzisa+bb/90Z1dx+Kp7RPjrerkat0Naz3k9knnWLsYhmvNDqeLvcmJVBvZAz/HwBYR
+8TnYcfrR+qrdvzuraDQOAsiuY7FuCBhUJ1frbljsZ+AcC6hiGK41O1xdDANDZA/4HANbRMT3YAeAs3s2OatoxBYAZNexiC0CC+rkat0NZ/Vzfay7GIb+79y5uyB7MOew0P0P
+dusuMOGsoqFHe0Ydi0bXaIe17obDbh/rKoaRzd7A0R7wOTR6HoN9+9dzk8/f7qyi8dy2sfN7sutYPL19IqVju1p3Q5e8cI7VxTBys/ckJyeSUWQv0lwkGz2faUxHNy+vbBt2
+VtG42L1mdV92HYu5jhW1+jZcrbuhS144x+piGLnZZx5aUftqguwlwV7Y9vP6yLEXsV3BRb6A7fGps21PkD0M+JES/hn311bsvkD2MOC7TPlxyR4o/AjZyxG+i+zlCL91hOzl
+2KbDMhKyl1kTjvaINTuxropZeKpXqAS6Sq1nZ+HJbmqzE+uqmIWneoWdQFdQmVl4spva7MS6SrllVa+YqXEl0TKy8GQ3tdmJdfXoqV7hTqDbKfN4ILd4ZC/uaNeJdVXMwlO9
+wp1Ah2Rn4cluarMT66qYhad6hU6g69R6Zhae7CbfyXfOOcUsPNUrdAJdp9Yzs/Bk50dzspOd7GQnOxvZyc5Gdjays0Wy/Qesg/tfJ8xwpQAAAABJRU5ErkJggg==" />
+<p>The composition B∙A has the property that (B∙A)(d) = B(A(d))
+for all documents d on which A can be applied.</p>
+<p>While a Wave client awaits server acknowledgement, it composes all its
+pending operations. This reduces the number of operations to transform
+and send.</p>
+</div>
+</div>
+<div class="section">
+<h1><a id="references" name="references">References</a></h1>
+<p>&quot;Operational transformation&quot;. In Wikipedia, the free encyclopedia, May 28, 2009. <a class="reference" href="http://en.wikipedia.org/wiki/Operational_transformation">http://en.wikipedia.org/wiki/Operational_transformation</a></p>
+<p>David A. Nichols, Pavel Curtis, Michael Dixon, and John Lamping: <a class="reference" href="http://doi.acm.org/10.1145/215585.215706">High-latency, low-bandwidth windowing in the Jupiter collaboration system</a>, UIST '95: Proceedings of the 8th annual ACM symposium on User interface and software technology, pp.111-120. ACM, 1995.</p>
+</div>
+</div>
+</body>
+</html>
