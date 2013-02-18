@@ -45,7 +45,8 @@ Each operation that travels over the network is composed of a sequence of the fo
  * setAttribute(address, name, value)
  * delAttribute(address, name)
  * move(address, address, address)
- * insertIfNotExist(address, element)
+ * mergeInsert(address, identifier, element)
+ 
 
 In order, these add one or more nodes to the document, remove one or more nodes, set or remove attributes on elements, and execute an atomic cut and paste.
 
@@ -71,16 +72,37 @@ move()
 ------
 This atomically removes the nodes given by the first two arguments (which must exist and be siblings, the same as for delete()), and inserts them at the location given by the third. All children and attributes of any elements are brought along for the ride.
 
-insertIfNotExist()
+mergeInsert()
 ------------------
-This is a slightly peculiar one: it is similar to insert() except that the address must have two or more entries and end with a user-defined identifier, and the thing being inserted must be an element. The operation is a no-op if a node with that identifier already exists, otherwise it the element is inserted somewhere among the siblings of the node the full address identifies.
+This is a slightly peculiar one: it is similar to insert() except that the address identifies the parent of the affected node, and the second parameter is a user-defined identifier. The operation is a no-op if a node with that identifier already exists, otherwise the element is inserted somewhere among the children of the node the address identifies, and given that identifier.
 
 Transforming operations
 =======================
 Determining if transformation is needed
 ---------------------------------------
-This step is required since operations that affect separate subtrees can be transformed to themselves.
+This step is required since operations that affect separate subtrees can be transformed to themselves. Specifically, there is a potential for transformation being required if, having normalised the paths to hang off the real root, either is a prefix of the other (or they are the same, of course).
 
-    boolean function collide(a,b)
-        
+Hence:
+
+    function collide(a,b)
+        for (i = 0; i < a.length; i++)
+            return [:prefix, i] if i == b.length  // b is a prefix of a
+            return [:different] if a[i] != b[i]   // unrelated paths
+        end
+        return [:same_path] if b.length == a.length //same path
+        return [:suffix]  //a is a prefix of b
     end
+
+Transformations that could possibly collide
+-------------------------------------------
+      |             |              Second               
+      |             |  i  |  d  | sa  | da  | mo  | mi  
+      +-------------+-----+-----+-----+-----+-----+-----
+    F |insert       |  x  |  x  |  x  |  x  |  x  |  x
+    i |delete       |  x  |  x  |  x  |  x  |  x  |  x
+    r |setAttribute |     |     |  x  |  x  |     |     
+    s |delAttribute |     |     |  x  |  x  |     |     
+    t |move         |  x  |  x  |  x  |  x  |  x  |  x
+      |mergeInsert  |  x  |  x  |  x  |  x  |  x  |  x
+
+Fortunately, there's a decent amount of commonality here. A move is like a delete followed by an insert, whilst a mergeInsert is either an insert or a noop.
