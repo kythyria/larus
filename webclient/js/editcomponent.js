@@ -112,12 +112,44 @@ define([], function() {
         }
         
         var lpnode = editor.document().createElement("span");
-        lpnode.setAttribute("class","lxe-localname")
+        lpnode.setAttribute("class","lxe-localname");
+        
+        this.getNode = function ()
+        {
+            return mynode;
+        };
     };
     
     var LxeAttribute = function(editor, elem, name, initialValue)
     {
-        var mynode, qname, value;
+        var mynode, qname, value, state;
+        
+        var startEdit = function(evt)
+        {
+            value.setAttribute("class","lxe-attribute editing");
+            value.contentEditable = true;
+            value.focus();
+            value.addEventListener("blur", stopEdit);
+            
+            state = "editing";
+        };
+        
+        var stopEdit = function(evt)
+        {
+            value.removeEventListener("blur",stopEdit);
+            
+            var newContent = value.textContent;
+            editor.emitChange({
+                type: "setAttribute",
+                address: elem.address,
+                attributeName: name,
+                newValue: newContent
+            });
+            
+            value.contentEditable = false;
+            value
+        };
+    }
         
         (function() {
             mynode = editor.document().createElement("span");
