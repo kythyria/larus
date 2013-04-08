@@ -30,99 +30,54 @@
  *   
  */
  
-define([], function() {
-    
-    //Class that wraps MutationObserver in order to create dummy events when observe is called.
-    //This saves explicit tree-walking code in the caller, since the events walk the tree.
-    //Note that it does not let you create
-    var WalkingMutationObserver = function(doc, callback)
-    {
-        var realobserver = doc.createMutationObserver(callback);
-        var observeoptions;
-        var doneinitialobserve = false;
-        var queue = [];
-        
-        var recurse = function(targetNode)
-        {
-            targetNode.eachAttribute(function(name, value){
-                queue.push({
-                    type:          "attribute",
-                    target:        targetNode,
-                    addedNodes:    null,
-                    removedNodes:  null,
-                    attributeName: name
-                });
-            });
-            
-            if (targetNode.children.length > 0)
-            {
-                queue.push({type:"childnodes", target: targetNode, addedNodes: targetNode.children, previousSibling: null, nextSibling: null,});
-                targetNode.children.forEach(recurse);
-            }
-        };
-        
-        var initialobserve = function(target)
-        {
-            if(doneinitialobserve) return;
-            
-            recurse(target);
-            
-            callback(queue);
-            queue = [];
-            doneinitialobserve = true;
-        };
-        
-        this.observe = function(target, options)
-        {
-            observeoptions = options;
-            initialobserve(target);
-            return realobserver.observe(callback, options);
-        };
-        
-        this.disconnect = function()
-        {
-            return realobserver.disconnect();
-        };
-        
-        this.takeRecords = function()
-        {
-            return realobserver.takeRecords();
-        };
-    };
+define(["dictionary","domutils","contextmenu","rangearray"], function(Dictionary,DomUtils,ContextMenu,RangeArray) {
+    var e = DomUtils.createElement;
     
     var LxeQname = function(editor, name)
     {
         var mynode, nsnode, nsepnode, lpnode;
         
-        mynode = editor.document().createElement("span");
-        mynode.setAttribute("class","lxe-qname");
+        mynode = e("span",{class: "lxe-qname"});
         
-        if(editor.prefixForNamespace(name.namespace) != "")
+        if(editor.prefixForNamespace(name.namespace) !== "")
         {
-            nsnode = editor.document().createElement("span");
-            nsnode.setAttribute("class","lxe-nsname");
-            nsnode.appendChild(editor.document().createTextNode(editor.prefixForNamespace(name.namespace)));
-            
-            nsepnode = editor.document().createElement("span");
-            nsepnode.setAttribute("class","lxe-nssep");
-            nsepnode.appendChild(editor.document().createTextNode(name.localname));
+            nsnode = e("span",{class: "lxe-nsname"}, editor.prefixForNamespace(name.namespace));
+            nsepnode = e("span", {"class":"lxe-nssep"}, ":");
             
             mynode.appendChild(nsnode);
             mynode.appendChild(nsepnode);
         }
         
-        var lpnode = editor.document().createElement("span");
-        lpnode.setAttribute("class","lxe-localname");
+        lpnode = e("span",{"class":"lxe-localname"}, name.localname);
         
-        this.getNode = function ()
-        {
-            return mynode;
-        };
+        this.__defineGetter("node",function(){return mynode;});
     };
     
     var LxeAttribute = function(editor, elem, name, initialValue)
     {
-        var mynode, qname, value, state;
+        var mynode, qname, separator, value, state, cmenu;
+        
+        cmenu = [
+            {
+                name: "Edit",
+                default: true,
+                callback: function()
+                {
+                    startEdit();
+                }
+            },
+            {
+                name: "Delete",
+                callback: function()
+                {
+                    editor.emitChange({
+                        type: "delAttribute",
+                        address: elem.address,
+                        attributeName: name,
+                    });
+                }
+            }
+        ];
         
         var startEdit = function(evt)
         {
@@ -147,106 +102,189 @@ define([], function() {
             });
             
             value.contentEditable = false;
-            value
+            state = "idle";
         };
-    }
         
-        (function() {
-            mynode = editor.document().createElement("span");
-            mynode.setAttribute("class","lxe-attribute");
-            mynode.setAttribute("data-name-prefix", name.namespace);
-            mynode.setAttribute("data-name-localname", name.localname);
-            
-            qname = new LxeQname(editor, name);
-            
-            mynode.appendChild(qname.getNode());
-        )();
+        var onClick = function(evt)
+        {
+            if(evt.button == 2)
+            {
+                ContextMenu.show(cmenu);
+                return false;
+            }
+            else if(evt.button == 1)
+            {
+                if (state=="idle")
+                {
+                    startEdit();
+                    return false;
+                }
+            }
+        };
+        
+        var removeFromDocument = function()
+        {
+            mynode.parent.removeChild(mynode);
+        };
+        
+        mynode = e("span", {class: "lxe-attribute", "data-name-prefix": name.namespace, "data-name-localname": name.localname});
+        mynode.addEventHandler("click",onClick)
+        
+        qname = new LxeQname(editor, name);
+        
+        mynode.appendChild(qname.node);
+        
+        separator = e("span", {"class":"lxe-attrsep"});
+        
+        mynode.appendChild(separator);
+        
+        value = e("span", {"class":"lxe-attrval"}, initialValue ? initialValue : "");
+        
+        mynode.appendChild(value);
+        
+        this.__defineGetter__("name",function() {return name;});
+        this.__defineGetter__("value", function(){return value.textContent;});
+        this.__defineSetter__("value", function(val){return value.textContent = val;});
+        this.__defineGetter__("node", function(){return mynode;});
+        this.removeFromDocument = removeFromDocument;
+        
+        state = "idle";
     };
     
-    /*
-      Widget representing an element. Knows how to make its little subtree in the UI, do the hide and show, etc.
-      
-      methods:
-        setAttribute(name, val)
-        delAttribute(name)
-        insertChild(num)
-        delChild(num,num)
-        insertText(str)
-        processMutation(mut)
-      It then generates mutations as appropriate. Doesn't need to know about moves or mergeinserts, those get exploded or eaten before they get here.
-    */
-    var LxeElement = function(editor, parent)
+    var LxeEndTag = function(editor, element, name)
     {
-        var mynode, starttag, attributes;
-        this.processMutation = function(mut)
+        var mynode, tago, etag, qname, tagc;
+        
+        qname = new LxeQname(name);
+        
+        mynode = e("span", {class: "lxe-endtag"},
+            tago = e("span",{class:"lxe-tago"},"<"),
+            etag = e("span",{class:"lxe-etag"},"/"),
+            qname.node,
+            tagc = e("span",{class:"lxe-tagc"},">")
+        );
+        this.__defineGetter__("node", function(){ return mynode;});
+    };
+    
+    var LxeStartTag = function(editor, element, name)
+    {
+        var mynode, tago, qname, tagc, attributes;
+        
+        attributes = new Dictionary();
+        
+        var onMutationEvent = function(mut)
         {
             switch(mut.type)
             {
-                case "insert":
-                    break;
-                case "delete":
-                    break;
                 case "setAttribute":
-                    if(attributes.hasKey(mut.attributeName))
+                    if (attributes.hasKey(mut.attributeName))
                     {
-                        attributes.get(mut.attributeName).setValue(mut.newValue);
+                        attributes.get(mut.attributeName).value = mut.newValue;
                     }
                     else
                     {
-                        var att = new LxeAttribute(editor, this, mut.attributeName, mut.newValue);
-                        starttag.insertBefore(starttag.lastChild, att.getElement());
+                        var a = new LxeAttribute(editor, element, mut.attributeName, mut.newValue);
+                        attributes.set(mut.attributeName, a);
+                        mynode.insertBefore(a.node, tagc);
                     }
                     break;
                 case "delAttribute":
-                    var att = attributes.remove(mut.attributeName);
-                    att.removeFromDisplay();
+                    if(attributes.hasKey(mut.attributeName))
+                    {
+                        attributes.remove(mut.attributeName).removeFromDocument();
+                    }
+                    break;
+                default:
                     break;
             }
         };
-    };
-    
-    return function(editorwindow)
-    {
-        //private variables;
-        var docview, docobserver, gutter, doccontainer;
-        var elemtoui = {};
-        var editEnabled = false;
         
-        var onMutationEvent = function(eventList)
-        {
-            eventList.forEach(function(i){
-                switch(i.type)
-                {
-                    case "attribute":
-                        var stag = elemtoui[i.target.address].querySelectorAll();
-                }
-            });
-        };
-        
-        this.closeDocumentView = function()
-        {
-            while(doccontainer.hasChildNodes())
+        var cmenu = [
             {
-                doccontainer.removeChild(doccontainer.firstChild);
+                name: "Delete element",
+                callback: function()
+                {
+                    editor.emitChange({
+                        type: "delete",
+                        address: element.address
+                    });
+                }
+            },
+            {
+                name: "New Attribute...",
+                callback: function()
+                {
+                    var nmtext = window.prompt("Attribute name");
+                    var qname = editor.qnameFromString(nmtext);
+                    
+                    var val = window.prompt("Attribute value");
+                    
+                    editor.emitChange({
+                        type: "setAttribute",
+                        address: element.address,
+                        attributeName: qname,
+                        newValue: val
+                    });
+                }
+            }
+        ];
+        
+        var onClick = function(evt)
+        {
+            if(evt.button == 2)
+            {
+                ContextMenu.show(cmenu);
+                return false;
+            }
+            else if (evt.button == 1)
+            {
+                editor.setCursorByAddress(element.address);
+                return false;
             }
         };
         
-        this.setDocumentView = function(doc)
-        {
-            this.closeDocumentView();
-            docview = doc.getCurrent();
-            editEnabled = docview.isEditable;
-            docobserver = new MutationObserver(docview,onMutationEvent);
-        }
         
-        (function()
-        {
-            gutter = document.createElement("div");
-            gutter.setAttribute("class","lxe-gutter");
-            editorwindow.appendChild(gutter);
-            
-            doccontainer = document.createElement("div");
-            doccontainer.setAttribute("class", "lxe-doctcontainer");
-        })();
+        qname = new LxeQname(name);
+        tago = e("span",{class:"lxe-tago"},"<");
+        tagc = e("span",{class:"lxe-tagc"},">");
+        mynode = e("span",{class:"lxe-starttag"}, tago, qname.node, tagc);
+        mynode.addEventHandler("click", onClick);
+        
+        this.__defineGetter__("node", function(){return mynode;});
+        this.__defineGetter__("attributes", function(){return attributes;});
+        this.handleChange = onMutationEvent;   
     };
+    
+    var LxeElement = function(editor, parent, name)
+    {
+        var mynode, attributes, starttag, endtag, contents, address;
+        
+        var onMutationEvent = function(mut)
+        {
+            switch(mut.type)
+            {
+                case "setAttribute":
+                case "delAttribute":
+                    starttag.handleChange(mut);
+                    break;
+                case "insert":
+                    doInsert(mut);
+                    break;
+                case "delete":
+                    doDelete(mut);
+                    break;
+                case "move":
+                    doMove(mut);
+                    break;
+            }
+        };
+        
+        mynode = e("div", {class: "lxe-element"});
+        this.handleChange = onMutationEvent;
+    };
+    
+    /****
+     * emitChange() emits a mutation *and* processes it internally
+     * handleChange() just does the internal processsing.
+     ****/
 });

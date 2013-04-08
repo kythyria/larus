@@ -155,8 +155,8 @@ namespace Mutations
         string childId; //For mergeInsert
         
         //For move and delete
-        NodeAddress startAddress;
-        NodeAddress endAddress;
+        NodeAddress endAddress; //optional: endAddress=target if not specified.
+        NodeAddress destination; //move only
         
         //For setAttribute and delAttribute
         QName attributeName;
