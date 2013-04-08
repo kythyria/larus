@@ -1,36 +1,35 @@
 define([],function(){
     var ced;
     
-    ced = function(doc,ary)
+    ced = function(doc,name)
     {
-        var el = doc.createElement(ary[0]);
+        var el = doc.createElement(name);
         
-        ary.slice(1).forEach(function(i)
+        if(arguments.length == 1) return el;
+        
+        arguments.shift();
+        
+        if (!(arguments[0] instanceof Node))
         {
-            switch(typeof(i))
+            for (var j in arguments[0])
             {
-                case "object":
-                    for (var j in i)
-                    {
-                        el.setAttribute(j[0], j[1]);
-                    }
-                    break;
-                case "string":
-                    el.appendChild(doc.createTextNode(i));
-                    break;
-                case "array":
-                    el.appendChild(ced(doc,i));
-                    break;
+                el.setAttribute(j[0], j[1]);
             }
+            arguments.shift();
+        }
+        arguments.forEach(function(i)
+        {
+            if (typeof i == "string") i = doc.createTextNode(i);
+            el.appendChild(i)
         });
         
         return el;
     };
     
-    var ce = function(ary)
+    var ce = function(name)
     {
-        ced(document,ary);
+        ced.apply(this, arguments);
     }
     
-    return { createElementDocument: ced, createElement: ce };
+    return { createElementDocument: ced, createElement: ce,};
 });

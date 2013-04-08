@@ -38,6 +38,11 @@ define([],function(){
             return removed;
         };
         
+        var hasKey(k)
+        {
+            return keys.indexOf(k) != -1;
+        };
+        
         this.get = get;
         this.set = set;
         this.forEach = forEach;
