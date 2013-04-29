@@ -10,7 +10,9 @@ Namespace
 ---------
 These are supposed to be globally unique; a common method is to put the year of issue into a URL the issuer owns. The zero is a version number, in case of non backwards compatible changes.
 
-    http://ns.berigora.net/2013/larus/nonelements/0
+    http://ns.berigora.net/2013/larus/structural/0
+
+The conventional prefix is, of course, "larus".
 
 <code>comment<code>
 -------------------
@@ -33,6 +35,14 @@ Represents a processing instruction. The target, that is, the token immediately 
 becomes
 
     <pi target="foo">bar baz barrow</pi>
+
+<code>root</code>
+-----------------
+**Appears:** As the real root
+**Attributes:** None
+**Contents:** Doctype, metadata elements, the logical root, <code>comment</code>, <code>pi</code>
+
+The element which the real root is, in Larus' data model. As such, it's pretty much a dumb container since the real root is only an element at all to avoid some special casing in certain places.
 
 DTD schema
 ==========

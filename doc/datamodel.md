@@ -22,6 +22,8 @@ Element nodes are more complicated. Each one has a name, which is a *Name*, and 
 
 Note that identifiers may be application/user defined, in which case two sites may attempt to create an element with the same identifier, and it manifests as an xml:id attribute in accordance with [XMLID](http://www.w3.org/TR/xml-id/). There are also two magic values that never conflict with any other identifiers: the *real root* and *logical root* identifiers. Being the logical root does not prevent an element from having a user-defined identifier.
 
+The real root is taken as always existing. Trying to create it is not a sensible operation.
+
 Addressing
 ----------
 This is taken from [DSL-OtSgml] with a slight modification. The address of a tree node is a list, which MUST start with an identifier (usually the real or logical root identifier), and the remaining entries of which are either numbers or identifiers.
@@ -40,21 +42,20 @@ Operations
 ==========
 Each operation that travels over the network is composed of a sequence of the following operations:
 
- * insert(address, element or character sequence)
- * delete(address, [address])
+ * insert(address, position, element or character sequence)
+ * delete(address, position, length)
  * setAttribute(address, name, value)
  * delAttribute(address, name)
- * move(address, address, address)
+ * move(address, position, length, address)
  * mergeInsert(address, identifier, element)
- 
 
-In order, these add one or more nodes to the document, remove one or more nodes, set or remove attributes on elements, and execute an atomic cut and paste.
+In order, these add one or more nodes to the document, remove one or more nodes, set or remove attributes on elements, and execute an atomic cut and paste. Note that insert and delete have the position of 
 
 insert()
 --------
 The first argument to this is an address specifying the location at which the second will be inserted, and must not end in an identifier. Correspondingly, it doesn't have to exist yet, whilst if it does, the new data is inserted preceding whatever is already there.
 
-The second argument is an element (possibly with children) or, alternatively, a sequence of characters.
+The third argument is an element or, alternatively, a sequence of characters. There are actually two types of insert, insertText and insertElement. In the former, the thing to be inserted is a string, in the latter, a qname.
 
 delete()
 --------
