@@ -38,14 +38,25 @@ define([],function(){
             return removed;
         };
         
-        var hasKey(k)
+        var hasKey = function(k)
         {
             return keys.indexOf(k) != -1;
         };
+        
+        var rassoc = function(v)
+        {
+            for(var i = 0; i < keys.length; i++)
+            {
+                if(get(keys[i])==v) return keys[i];
+            }
+            return undefined;
+        }
         
         this.get = get;
         this.set = set;
         this.forEach = forEach;
         this.remove = remove;
+        this.hasKey = hasKey;
+        this.rassoc = rassoc;
     };
 });
