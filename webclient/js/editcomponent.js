@@ -30,7 +30,7 @@
  *   
  */
  
-define(["dictionary","domutils","contextmenu","rangearray"], function(Dictionary,DomUtils,ContextMenu,RangeArray) {
+define(["dictionary","domutils","contextmenu","address","qname"], function(Dictionary,DomUtils,ContextMenu,Address,Qname) {
     var e = DomUtils.createElement;
     
     var LxeQname = function(editor, name)
@@ -255,20 +255,152 @@ define(["dictionary","domutils","contextmenu","rangearray"], function(Dictionary
         this.handleChange = onMutationEvent;   
     };
     
+    var LxeCharacter = function(editor, parent, char)
+    {
+        var myIndex;
+        var mynode = e("span",char);
+        
+        var removeFromDocument = function()
+        {
+            mynode.parent.removeChild(mynode);
+        };
+        
+        var onClick = function(evt)
+        {
+            if (evt.button == 1)
+            {
+                editor.setCursorByAddress(this.address);
+                return false;
+            }
+        };
+        
+        var getAddress = function()
+        {
+            if (!parent) return Address.realRoot;
+            
+            return parent.address.addrOfChild(myIndex);
+        };
+        
+        this.__defineGetter__("myIndex", function(){return myIndex;});
+        this.__defineSetter__("myIndex", function(val){myIndex = val; return val});
+        this.__defineGetter__("address", getAddress);
+        this.__defineGetter__("node", function(){return mynode;});
+        this.__defineGetter__("char", function(){return char;});
+        this.removeFromDocument = removeFromDocument;
+    };
+    
     var LxeElement = function(editor, parent, name)
     {
-        var mynode, attributes, starttag, endtag, contents, address;
+        var mynode, starttag, contenttag, endtag, contents, myIndex;
+        
+        var updatePositions = function(startingFrom)
+        {
+            for (var i = startingFrom; i < contents.length; i++)
+            {
+                contents[i].address.myIndex = i;
+            }
+        };
+        
+        var doInsertElement = function(mut)
+        {
+            var elem = new LxeElement(editor, this, mut.inserted);
+            
+            if(mut.position >= contents.length)
+            {
+                contents.push(elem);
+                contenttag.appendChild(elem.node);
+            }
+            else
+            {
+                 contents.splice(mut.position, 0, elem);
+                 contenttag.insertBefore(elem.node,contenttag.children[mut.position]);
+            }
+            
+            updatePositions(mut.position);
+        };
+        
+        var doInsertText = function(mut)
+        {
+            var i; //scope is per-function >_>
+            if(mut.childPosition >= contents.length)
+            {
+                for(i = 0; i < mut.inserted.length; i++)
+                {
+                    var c = new LxeCharacter(editor, this, mut.inserted[i]);
+                    contents.push(c);
+                    contenttag.appendChild(c);
+                }
+            }
+            else
+            {
+                var chars = [];
+                for(i = 0; i < mut.inserted.length; i++)
+                {
+                    chars.push(new LxeCharacter(editor, this, mut.inserted[i]));
+                    contenttag.insertBefore(chars[i],contenttag.children[mut.position]);
+                }
+                Array.splice.apply(contents, [mut.position, 0].concat(chars));
+            }
+            
+            updatePositions(mut.position);
+        };
+        
+        var doDelete = function(mut)
+        {
+            var length = mut.length ? mut.length : 1;
+            var removed = contents.splice(mut.position, length);
+            removed.forEach(function(i){i.removeFromDocument();});
+            updatePositions(mut.position);
+            return removed;
+        };
+        
+        var doMove = function(mut)
+        {
+            var removed = doDelete(mut);
+            editor.handleChange({
+                type: "completeMove",
+                address: mut.destination,
+                position: mut.destPosition,
+                payload: removed
+            });
+            
+        };
+        
+        var completeMove = function(mut)
+        {
+            for(var i = 0; i <= mut.payload.length; i++)
+            {
+                i.parent = this;
+                if(mut.position+i >= contents.length)
+                {
+                    contents.push(mut.payload[i]);
+                    contenttag.appendChild(mut.payload[i].node);
+                }
+                else
+                {
+                    contents.splice(mut.position+i,0,mut.payload[i]);
+                    contenttag.insertBefore(mut.payload[i],contenttag.children[mut.position+i]);
+                }
+            }
+            updatePositions(mut.position);
+        };
         
         var onMutationEvent = function(mut)
         {
+            if (this.address.isParentOf(mut.address))
+                return contents[this.address.childIndex(mut.address)].handleChange(mut);
+            
             switch(mut.type)
             {
                 case "setAttribute":
                 case "delAttribute":
                     starttag.handleChange(mut);
                     break;
-                case "insert":
-                    doInsert(mut);
+                case "insertElement":
+                    doInsertElement(mut);
+                    break;
+                case "insertText":
+                    doInsertText(mut);
                     break;
                 case "delete":
                     doDelete(mut);
@@ -276,15 +408,165 @@ define(["dictionary","domutils","contextmenu","rangearray"], function(Dictionary
                 case "move":
                     doMove(mut);
                     break;
+                case "completeMove": // This isn't a real op, it's just so I don't have to code the addressing logic twice.
+                    completeMove(mut);
+                    break;
             }
         };
         
-        mynode = e("div", {class: "lxe-element"});
+        var removeFromDocument = function()
+        {
+            mynode.parent.removeChild(mynode);
+        };
+        
+        var getAddress = function()
+        {
+            if (!parent) return Address.realRoot;
+            
+            return parent.address.addrOfChild(myIndex);
+        };
+        
+        var setId = function(newid)
+        {
+            
+        };
+        
+        starttag = new LxeStartTag(editor, this, name);
+        contenttag = e("div", {class: "lxe-elementcontent"});
+        endtag = LxeEndTag(editor, this, name);
+        mynode = e("div", {class: "lxe-element"}, starttag.node, contenttag, endtag.node);
+        
         this.handleChange = onMutationEvent;
+        this.removeFromDocument = removeFromDocument;
+        this.__defineGetter__("myIndex", function(){return myIndex;});
+        this.__defineSetter__("myIndex", function(val){myIndex = val; return val});
+        this.__defineGetter__("address", getAddress);
+        this.__defineGetter__("node", function(){return mynode;});
     };
     
     /****
-     * emitChange() emits a mutation *and* processes it internally
-     * handleChange() just does the internal processsing.
+     * Methods
+     *      prefixForNamespace(ns)
+     *          return a short prefix to describe the namespace: the h in xmlns:h="http://www.w3.org/1999/xhtml"
+     *          If there's no such prefix, return the empty string.
+     * 
+     *      emitChange()
+     *          emits a mutation *and* processes it internally
+     * 
+     *      handleChange()
+     *          just does the internal processing.
+     *      
+     *      qnameFromString(str, defaultns)
+     *          Takes a string of the form "prefix:local" and returns a qname for it.
+     *          If there is no prefix, use defaultns as the namespace.
+     * 
+     * Properties:
+     *      cursorPosition
+     *          get or set where the cursor is.
+     * 
+     *      selectionStart
+     *          start of the selection
+     * 
+     *      selectionEnd
+     *          end of the selection
+     * 
+     *      changePipe
+     *          Object with an emitChange() method which is called every time the
+     *          editor generates a mutation, and a handleChange property which is
+     *          a callback to notify the editor of incoming mutations.
+     *          
+     * 
+     * Because it's actually simpler, a vilike interface:
+     * Normal mode:
+     *      a and d to move like left and right arrows
+     *      w and s to jump in and out of the proximate element.
+     *      q to mark the first position
+     *      e to mark the second
+     *      r to clear the selection
+     *      
+     *      m to move the selection to the cursor position
+     *      j to insert text
+     *      k to insert element
+     * 
+     *      u to append text (insert after current position)
+     *      i to append element
+     * 
+     *      d to delete the selection (or the current item if no selection).
+     * 
+     * Note that the editor swaps the start and end of selection if otherwise end would be before start.
+     * After all, the alternative would be to reject them entirely.
      ****/
+     
+    return function()
+    {
+        var selectStart, selectEnd, cursorPos, mynode, prefixes, changePipe, rootElement;
+        
+        this.handleChange = function(mut)
+        {
+            rootElement.handleChange(mut);
+        };
+        
+        this.emitChange = function(mut)
+        {
+            changePipe.emitChange(mut);
+            this.handleChange(mut);
+        };
+        
+        this.qnameFromString = function(str, defaultns)
+        {
+            var m = /^([^:]*):(.*)$/.exec(str);
+            if(m)
+            {
+                var ns = prefixes.rassoc(m[1]);
+                var ln = m[2];
+                return new Qname(ns,ln);
+            }
+            else
+            {
+                return new Qname(defaultns, str);
+            }
+        }
+        
+        this.prefixForNamespace = function(ns)
+        {
+            var prefix = prefixes.get(ns);
+            return prefix ? prefix : "";
+        }
+        
+        var onKeyPress = function(evt)
+        {
+            switch(DomUtils.keyEventkey(evt.key))
+            {
+                case "W":
+                    
+                case "A":
+                    
+                case "S":
+                    
+                case "D":
+                
+                case "Q":
+                    
+                case "E":
+                    
+                case "R":
+                    
+                case "M":
+                    
+                case "J":
+                    
+                case "K":
+                    
+                
+            }
+        }
+        
+        prefixes = new Dictionary();
+        
+        //Really these should be loaded from a configuration or something.
+        prefixes.set("http://www.w3.org/XML/1998/namespace","xml"); //Except for this one, which MUST be present as per the XML namespace spec.
+        prefixes.set("http://ns.berigora.net/2013/larus/structural/0","larus");
+        prefixes.set("http://ns.berigora.net/2013/larus/doctype/0","dtd")
+        prefixes.set("http://www.w3.org/1999/xhtml","html");
+    };
 });

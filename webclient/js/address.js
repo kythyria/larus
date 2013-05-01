@@ -130,6 +130,7 @@
         }
         
         this.__defineGetter__("myIndex",function(){return components[components.length-1]});
+        this.__defineSetter__("myIndex",function(v){return components[components.length-1] = v})
         this.__defineGetter__("startPoint", getStartPoint);
         this.__defineGetter__("parent", getParent);
         this.__defineGetter__("length", getLength);
