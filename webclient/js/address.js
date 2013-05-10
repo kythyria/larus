@@ -25,7 +25,12 @@
  *          The i'th component of the address.
  *      normalise()
  *          Return an address with everything before the last id or real root removed.
- * 
+ *      before(n)
+ *          Return an address for the nth preceding sibling
+ *      after(n)
+ *          Return an address for the nth following sibling
+ *      clone()
+ *          Return a copy of the address. 
  * Properties:
  *      myIndex
  *          The number of this node's position among its siblings.
@@ -36,6 +41,8 @@
  *          The address of this node's parent, or null if none can be determined from the address alone.
  *      length
  *          The number of components in this adddress
+ *      isRoot
+ *          Truthy if the address refers to the real root.
  * 
  * Static Properties:
  *      realRoot
@@ -105,6 +112,23 @@
             }
         };
         
+        this.before = function(n)
+        {
+            if(arguments.length === 0) { this.before(1); }
+            if(this.myIndex === 0) { return new Address(components.slice(0)); }
+            var newComponents = components.slice(0);
+            newComponents[newComponents.length-1] -= n;
+            return new Address(newComponents);
+        };
+        
+        this.after = function(n)
+        {
+            if(arguments.length === 0) { this.after(1); }
+            var newComponents = components.slice(0);
+            newComponents[newComponents.length-1] += n;
+            return new Address(newComponents);
+        };
+        
         var getStartPoint = function()
         {
             
@@ -113,6 +137,11 @@
                 if (typeof(components[i]) == "string" || components[i] == -1) { return components[i] }
             }
         };
+        
+        this.clone = function()
+        {
+            return new Address(components.slice(0));
+        }
         
         var getParent = function()
         {
@@ -127,10 +156,16 @@
         var getLength = function()
         {
             return components.length;
-        }
+        };
         
-        this.__defineGetter__("myIndex",function(){return components[components.length-1]});
-        this.__defineSetter__("myIndex",function(v){return components[components.length-1] = v})
+        var getIsRoot = function()
+        {
+            var addr = this.normalise;
+            return addr.component(0);
+        };
+        
+        this.__defineGetter__("myIndex",function(){return components[components.length-1];});
+        this.__defineSetter__("myIndex",function(v){return components[components.length-1] = v;});
         this.__defineGetter__("startPoint", getStartPoint);
         this.__defineGetter__("parent", getParent);
         this.__defineGetter__("length", getLength);

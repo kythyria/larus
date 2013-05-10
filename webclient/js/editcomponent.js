@@ -281,6 +281,42 @@ define(["dictionary","domutils","contextmenu","address","qname"], function(Dicti
             return parent.address.addrOfChild(myIndex);
         };
         
+        var showCursor = function()
+        {
+            mynode.classList.add("lxe-cursorpresent");
+        };
+        
+        var hideCursor = function()
+        {
+            mynode.classlist.remove("lxe-cursorpresent");
+        };
+        
+        var markStart = function()
+        {
+            mynode.classList.add("lxe-selectstart");
+        };
+        
+        var markEnd = function()
+        {
+            mynode.classList.add("lxe-selectend");
+        };
+        
+        var unmarkStart = function()
+        {
+            mynode.classList.remove("lxe-selectstart");
+        };
+        
+        var unmarkEnd = function()
+        {
+            mynode.classList.remove("lxe-selectend");
+        };
+        
+        this.showCursor = showCursor;
+        this.hideCursor = hideCursor;
+        this.markStart = markStart;
+        this.markEnd = markEnd;
+        this.unmarkStart = unmarkStart;
+        this.unmarkEnd = unmarkEnd;
         this.__defineGetter__("myIndex", function(){return myIndex;});
         this.__defineSetter__("myIndex", function(val){myIndex = val; return val});
         this.__defineGetter__("address", getAddress);
@@ -431,6 +467,48 @@ define(["dictionary","domutils","contextmenu","address","qname"], function(Dicti
             
         };
         
+        var showCursor = function()
+        {
+            starttag.node.classList.add("lxe-cursorpresent");
+        };
+        
+        var hideCursor = function()
+        {
+            starttag.node.classList.remove("lxe-cursorpresent");
+        };
+        
+        var childNode = function(idx)
+        {
+            return contents[idx];
+        };
+        
+        var childCount = function()
+        {
+            return contents.length;
+        }
+        
+        var markStart = function()
+        {
+            mynode.classList.add("lxe-selectstart");
+        };
+        
+        var markEnd = function()
+        {
+            mynode.classList.add("lxe-selectend");
+        };
+        
+        var unmarkStart = function()
+        {
+            mynode.classList.remove("lxe-selectstart");
+        };
+        
+        var unmarkEnd = function()
+        {
+            mynode.classList.remove("lxe-selectend");
+        };
+        
+        contents = [];
+        
         starttag = new LxeStartTag(editor, this, name);
         contenttag = e("div", {class: "lxe-elementcontent"});
         endtag = LxeEndTag(editor, this, name);
@@ -438,6 +516,14 @@ define(["dictionary","domutils","contextmenu","address","qname"], function(Dicti
         
         this.handleChange = onMutationEvent;
         this.removeFromDocument = removeFromDocument;
+        this.showCursor = showCursor;
+        this.hideCursor = hideCursor;
+        this.markStart = markStart;
+        this.markEnd = markEnd;
+        this.unmarkStart = unmarkStart;
+        this.unmarkEnd = unmarkEnd;
+        this.childNode = childNode;
+        this.__defineGetter("childCount", childCount);
         this.__defineGetter__("myIndex", function(){return myIndex;});
         this.__defineSetter__("myIndex", function(val){myIndex = val; return val});
         this.__defineGetter__("address", getAddress);
@@ -497,9 +583,9 @@ define(["dictionary","domutils","contextmenu","address","qname"], function(Dicti
      * After all, the alternative would be to reject them entirely.
      ****/
      
-    return function()
+    return function(editorElem)
     {
-        var selectStart, selectEnd, cursorPos, mynode, prefixes, changePipe, rootElement;
+        var selectStart, selectEnd, cursorPos, prefixes, changePipe, rootElement;
         
         this.handleChange = function(mut)
         {
@@ -525,39 +611,158 @@ define(["dictionary","domutils","contextmenu","address","qname"], function(Dicti
             {
                 return new Qname(defaultns, str);
             }
-        }
+        };
         
         this.prefixForNamespace = function(ns)
         {
             var prefix = prefixes.get(ns);
             return prefix ? prefix : "";
-        }
+        };
+        
+        var getNodeObject = function(address)
+        {
+            var addr = address.normalise();
+            if (addr.isRoot)
+            {
+                return rootElement;
+            }
+            
+            var currElem = rootElement;
+            for (var i = 1; i < addr.length; i++)
+            {
+                currElem = currElem.childNode(addr.component(i));
+            }
+            
+            return currElem;
+        };
+        
+        var setCursorPosition = function(pos)
+        {
+            getNodeObject(cursorPos).removeCursor();
+            getNodeObject(pos).showCursor();
+            cursorPos = pos;
+        };
+        
+        /**
+         * Movements
+         **/
+         
+        var moveOut = function()
+        {
+            var newAddr = cursorPos.parent;
+            if (newAddr)
+            {
+                setCursorPosition(newAddr);
+            }
+        };
+        
+        var moveIn = function()
+        {
+            if (getNodeObject(cursorPos) instanceof LxeElement)
+            {
+                var newAddr = cursorPos.addrOfChild(0);
+                setCursorPosition(newAddr);
+            }
+        };
+        
+        var moveLeft = function()
+        {
+            if (cursorPos.myIndex > 0)
+            {
+                var newAddr = cursorPos.before(1);
+                setCursorPosition(newAddr);
+            }
+        };
+        
+        var moveRight = function()
+        {
+            if (cursorPos.myIndex < getNodeObject(cursorPos.parent).childCount-1)
+            {
+                var newAddr = cursorPos.after();
+                setCursorPosition(newAddr);
+            }
+        };
+        
+        /**
+         * Selection control
+         **/
+        
+        var markStart = function()
+        {
+            getNodeObject(selectStart).unmarkStart();
+            getNodeObject(cursorPos).markStart();
+            selectStart = cursorPos.clone();
+        };
+        
+        var markEnd = function()
+        {
+            getNodeObject(selectEnd).unmarkEnd();
+            getNodeObject(cursorPos).markEnd();
+            selectEnd = cursorPos.clone();
+        };
+        
+        /**
+         * Insert
+         **/
+         
+        var insertText = function()
+        {
+            var text = prompt("Text to insert");
+            this.emitChange({
+                type: "insertText",
+                target: cursorPos.parent,
+                position: cursorPos.myIndex,
+                inserted: text
+            });
+        };
+        
+        var insertElement = function()
+        {
+            var elname = prompt("Element name");
+            var qname = this.qnameFromString(elname);
+            
+            this.emitChange({
+                type: "insertElement",
+                target: cursorPos.parent,
+                position: cursorPos.myIndex,
+                inserted: qname
+            });
+        };
         
         var onKeyPress = function(evt)
         {
             switch(DomUtils.keyEventkey(evt.key))
             {
                 case "W":
-                    
+                    moveOut();
+                    break;
                 case "A":
-                    
+                    moveLeft();
+                    break;
                 case "S":
-                    
+                    moveIn();
+                    break;
                 case "D":
-                
+                    moveRight();
+                    break;
                 case "Q":
-                    
+                    markStart();
+                    break;
                 case "E":
-                    
+                    markEnd();
+                    break;
                 case "R":
                     
                 case "M":
                     
                 case "J":
-                    
+                    insertText();
+                    break;
                 case "K":
+                    insertElement();
+                    break;
+                case "U":
                     
-                
             }
         }
         
