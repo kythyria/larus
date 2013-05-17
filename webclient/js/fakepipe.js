@@ -38,11 +38,10 @@ define("fakepipe",["domutils", "mutation"],function(DomUtils, Mutation){
         };
         
         mynode.appendChild(textarea = e("textarea"));
-            e("br"));
-            inputline = e("input", {type:"text"}));
-            e("br"));
-            button = e("button","send"));
-        );
+        mynode.appendChild(e("br"));
+        mynode.appendChild(inputline = e("input", {type:"text"}));
+        mynode.appendChild(e("br"));
+        mynode.appendChild(button = e("button","send"));
         
         mynode.classList.add("fp-fakepipe");
         button.addEventListener("click",onSubmit);
