@@ -49,6 +49,7 @@ define("editcomponent",["dictionary","domutils","contextmenu","address","qname"]
         }
         
         lpnode = e("span",{"class":"lxe-localname"}, name.localname);
+        mynode.appendChild(lpnode);
         
         this.__defineGetter__("node",function(){return mynode;});
     };
@@ -124,7 +125,7 @@ define("editcomponent",["dictionary","domutils","contextmenu","address","qname"]
         
         var removeFromDocument = function()
         {
-            mynode.parent.removeChild(mynode);
+            mynode.parentNode.removeChild(mynode);
         };
         
         mynode = e("span", {class: "lxe-attribute", "data-name-prefix": name.namespace, "data-name-localname": name.localname});
@@ -262,7 +263,7 @@ define("editcomponent",["dictionary","domutils","contextmenu","address","qname"]
         
         var removeFromDocument = function()
         {
-            mynode.parent.removeChild(mynode);
+            mynode.parentNode.removeChild(mynode);
         };
         
         var onClick = function(evt)
@@ -288,7 +289,7 @@ define("editcomponent",["dictionary","domutils","contextmenu","address","qname"]
         
         var hideCursor = function()
         {
-            mynode.classlist.remove("lxe-cursorpresent");
+            mynode.classList.remove("lxe-cursorpresent");
         };
         
         var markStart = function()
@@ -327,6 +328,7 @@ define("editcomponent",["dictionary","domutils","contextmenu","address","qname"]
     
     var LxeElement = function(editor, parent, name)
     {
+        var self = this; //this shouldn't be needed and probably isn't
         var mynode, starttag, contenttag, endtag, contents, myIndex;
         
         var updatePositions = function(startingFrom)
@@ -339,7 +341,7 @@ define("editcomponent",["dictionary","domutils","contextmenu","address","qname"]
         
         var doInsertElement = function(mut)
         {
-            var elem = new LxeElement(editor, this, mut.inserted);
+            var elem = new LxeElement(editor, self, mut.inserted);
             
             if(mut.position >= contents.length)
             {
@@ -362,7 +364,7 @@ define("editcomponent",["dictionary","domutils","contextmenu","address","qname"]
             {
                 for(i = 0; i < mut.inserted.length; i++)
                 {
-                    var c = new LxeCharacter(editor, this, mut.inserted[i]);
+                    var c = new LxeCharacter(editor, self, mut.inserted[i]);
                     contents.push(c);
                     contenttag.appendChild(c);
                 }
@@ -372,10 +374,10 @@ define("editcomponent",["dictionary","domutils","contextmenu","address","qname"]
                 var chars = [];
                 for(i = 0; i < mut.inserted.length; i++)
                 {
-                    chars.push(new LxeCharacter(editor, this, mut.inserted[i]));
-                    contenttag.insertBefore(chars[i],contenttag.children[mut.position]);
+                    chars.push(new LxeCharacter(editor, self, mut.inserted[i]));
+                    contenttag.insertBefore(chars[i].node,contenttag.children[mut.position+i]);
+                    contents.splice(mut.position+i, 0, chars[i]);
                 }
-                Array.splice.apply(contents, [mut.position, 0].concat(chars));
             }
             
             updatePositions(mut.position);
@@ -406,7 +408,7 @@ define("editcomponent",["dictionary","domutils","contextmenu","address","qname"]
         {
             for(var i = 0; i <= mut.payload.length; i++)
             {
-                i.parent = this;
+                i.parent = self;
                 if(mut.position+i >= contents.length)
                 {
                     contents.push(mut.payload[i]);
@@ -423,8 +425,11 @@ define("editcomponent",["dictionary","domutils","contextmenu","address","qname"]
         
         var onMutationEvent = function(mut)
         {
-            if (this.address.isParentOf(mut.address))
-                return contents[this.address.childIndex(mut.address)].handleChange(mut);
+            if (self.address.isParentOf(mut.target))
+            {
+                var ci = self.address.childIndex(mut.target)
+                return contents[ci].handleChange(mut);
+            }
             
             switch(mut.type)
             {
@@ -452,7 +457,7 @@ define("editcomponent",["dictionary","domutils","contextmenu","address","qname"]
         
         var removeFromDocument = function()
         {
-            mynode.parent.removeChild(mynode);
+            mynode.parentNode.removeChild(mynode);
         };
         
         var getAddress = function()
@@ -583,20 +588,21 @@ define("editcomponent",["dictionary","domutils","contextmenu","address","qname"]
      
     return function(editorElem)
     {
+        var self = this; //Workaround for this changing out from under us
         var selectStart, selectEnd, cursorPos, prefixes, changePipe, rootElement;
         
-        this.handleChange = function(mut)
+        self.handleChange = function(mut)
         {
             rootElement.handleChange(mut);
         };
         
-        this.emitChange = function(mut)
+        self.emitChange = function(mut)
         {
             changePipe.emitChange(mut);
-            this.handleChange(mut);
+            self.handleChange(mut);
         };
         
-        this.qnameFromString = function(str, defaultns)
+        self.qnameFromString = function(str, defaultns)
         {
             var m = /^([^:]*):(.*)$/.exec(str);
             if(m)
@@ -611,7 +617,7 @@ define("editcomponent",["dictionary","domutils","contextmenu","address","qname"]
             }
         };
         
-        this.prefixForNamespace = function(ns)
+        self.prefixForNamespace = function(ns)
         {
             var prefix = prefixes.get(ns);
             return prefix ? prefix : "";
@@ -636,8 +642,13 @@ define("editcomponent",["dictionary","domutils","contextmenu","address","qname"]
         
         var setCursorPosition = function(pos)
         {
-            getNodeObject(cursorPos).removeCursor();
-            getNodeObject(pos).showCursor();
+            var no;
+            if (cursorPos) {
+                no = getNodeObject(cursorPos)
+                no.hideCursor();
+            }
+            no = getNodeObject(pos);
+            no.showCursor();
             cursorPos = pos;
         };
         
@@ -733,7 +744,7 @@ define("editcomponent",["dictionary","domutils","contextmenu","address","qname"]
         var insertText = function()
         {
             var text = prompt("Text to insert");
-            this.emitChange({
+            self.emitChange({
                 type: "insertText",
                 target: cursorPos.parent,
                 position: cursorPos.myIndex,
@@ -744,9 +755,9 @@ define("editcomponent",["dictionary","domutils","contextmenu","address","qname"]
         var insertElement = function()
         {
             var elname = prompt("Element name");
-            var qname = this.qnameFromString(elname);
+            var qname = self.qnameFromString(elname);
             
-            this.emitChange({
+            self.emitChange({
                 type: "insertElement",
                 target: cursorPos.parent,
                 position: cursorPos.myIndex,
@@ -770,6 +781,22 @@ define("editcomponent",["dictionary","domutils","contextmenu","address","qname"]
             cursorPos = oldCPos;
         };
         
+        var insertTextChild = function()
+        {
+            var oldCPos = cursorPos;
+            cursorPos = cursorPos.addrOfChild(0);
+            insertText();
+            cursorPos = oldCPos;
+        };
+        
+        var insertElementChild = function()
+        {
+            var oldCPos = cursorPos;
+            cursorPos = cursorPos.addrOfChild(0);
+            insertElement();
+            cursorPos = oldCPos;
+        };
+        
         /**
          * Move and delete
          **/
@@ -778,7 +805,7 @@ define("editcomponent",["dictionary","domutils","contextmenu","address","qname"]
         {
             if (!selectStart || !selectEnd)
             {
-                this.emitChange({
+                self.emitChange({
                     type: "delete",
                     target: selectStart.parent,
                     position: selectStart.myIndex,
@@ -787,7 +814,7 @@ define("editcomponent",["dictionary","domutils","contextmenu","address","qname"]
             }
             else
             {
-                this.emitChange({
+                self.emitChange({
                     type: "delete",
                     target: cursorPos.parent,
                     position: cursorPos.myIndex,
@@ -800,7 +827,7 @@ define("editcomponent",["dictionary","domutils","contextmenu","address","qname"]
         {
             if (selectStart && selectEnd)
             {
-                this.emitChange({
+                self.emitChange({
                     type: "move",
                     target: selectStart.parent,
                     position: selectStart.myIndex,
@@ -851,7 +878,13 @@ define("editcomponent",["dictionary","domutils","contextmenu","address","qname"]
                 case "I":
                     appendElement();
                     break;
-                case "D":
+                case "O":
+                    insertTextChild();
+                    break;
+                case "P":
+                    insertElementChild();
+                    break;
+                case "Y":
                     deleteStuff();
                     break;
             }
@@ -861,7 +894,7 @@ define("editcomponent",["dictionary","domutils","contextmenu","address","qname"]
         {
             if (changePipe) {changePipe.handleChange = undefined;}
             changePipe = newcp;
-            changePipe.handleChange = this.handlechange;
+            changePipe.handleChange = self.handleChange;
             return newcp;
         };
         
@@ -875,20 +908,47 @@ define("editcomponent",["dictionary","domutils","contextmenu","address","qname"]
         
         editorElem.classList.add("lxe-editorcontainer");
         
-        editorElem.addEventListener("keypress",onKeyPress,false);
+        //editorElem.addEventListener("keypress",onKeyPress,false);
         
         rootElement = new LxeElement(this, null, new Qname("http://ns.berigora.net/2013/larus/structural/0", "root"));
+        
+        var toolbar = e("div",{class:"lxe-toolbar"})
+        
+        var buttons = {
+            W:moveOut,
+            A:moveLeft,
+            S:moveIn,
+            D:moveRight,
+            Q:markStart,
+            E:markEnd,
+            R:clearSelection,
+            M:move,
+            J:insertText,
+            K:insertElement,
+            U:appendText,
+            I:appendElement,
+            O:insertTextChild,
+            P:insertElementChild,
+            Y:deleteStuff
+        };
+        for (var i in buttons)
+        {
+            var b = e("button",i);
+            b.addEventListener("click",buttons[i]);
+            toolbar.appendChild(b);
+        }
+        editorElem.appendChild(toolbar);
         editorElem.appendChild(rootElement.node);
         
-        this.__defineGetter__("changePipe", function(){return changePipe;});
-        this.__defineSetter__("changePipe", function(val){changePipe = val; return val});
-        this.__defineGetter__("selectionStart", function(){return selectStart;});
-        this.__defineSetter__("selectionStart", function(val){markStart(val); return val});
-        this.__defineGetter__("selectionEnd", function(){return selectEnd;});
-        this.__defineSetter__("selectionEnd", function(val){markEnd(val); return val;});
-        this.__defineGetter__("cursorPosition", function(){return cursorPos;});
-        this.__defineSetter__("cursorPosition", function(val){setCursorPosition(val.clone()); return val;});
-        this.__defineGetter__("changePipe", function(){return changePipe;});
-        this.__defineSetter__("changePipe", setChangePipe);
+        setCursorPosition(Address.realRoot);
+        
+        self.__defineGetter__("selectionStart", function(){return selectStart;});
+        self.__defineSetter__("selectionStart", function(val){markStart(val); return val});
+        self.__defineGetter__("selectionEnd", function(){return selectEnd;});
+        self.__defineSetter__("selectionEnd", function(val){markEnd(val); return val;});
+        self.__defineGetter__("cursorPosition", function(){return cursorPos;});
+        self.__defineSetter__("cursorPosition", function(val){setCursorPosition(val.clone()); return val;});
+        self.__defineGetter__("changePipe", function(){return changePipe;});
+        self.__defineSetter__("changePipe", setChangePipe);
     };
 });

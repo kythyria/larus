@@ -47,6 +47,8 @@
  * Static Properties:
  *      realRoot
  *          Address referring to the real root of the document.
+ *      revivify
+ *          Reconstruct an Address given its JSON representation
  * 
  * Constructor:
  *      Address(ary)
@@ -59,7 +61,7 @@
         
         this.isParentOf = function(addr)
         {
-            if(addr.length < this.length) return false;
+            if(addr.length <= this.length) return false;
             
             for(var i = 0; i < this.length; i++)
             {
@@ -107,14 +109,14 @@
             {
                 if (typeof(components[i]) == "string" || components[i] == -1)
                 {
-                    return new Array(components.slice(i));
+                    return new Address(components.slice(i));
                 }
             }
         };
         
         this.before = function(n)
         {
-            if(arguments.length === 0) { this.before(1); }
+            if(arguments.length === 0) { return this.before(1); }
             if(this.myIndex === 0) { return new Address(components.slice(0)); }
             var newComponents = components.slice(0);
             newComponents[newComponents.length-1] -= n;
@@ -123,7 +125,7 @@
         
         this.after = function(n)
         {
-            if(arguments.length === 0) { this.after(1); }
+            if(arguments.length === 0) { return this.after(1); }
             var newComponents = components.slice(0);
             newComponents[newComponents.length-1] += n;
             return new Address(newComponents);
@@ -161,7 +163,7 @@
         var getIsRoot = function()
         {
             var addr = this.normalise;
-            return addr.component(0);
+            return addr.component(0) == -1;
         };
         
         this.__defineGetter__("myIndex",function(){return components[components.length-1];});
@@ -171,7 +173,7 @@
         this.__defineGetter__("length", getLength);
     };
     
-    Address.revive = function(jsn) { return new Address(jsn); };
+    Address.revivify = function(jsn) { return new Address(jsn); };
     
     Object.defineProperty(Address, "realRoot", {value: new Address([-1])} );
     

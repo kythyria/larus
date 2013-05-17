@@ -20,7 +20,7 @@
  *          Called to dispatch a mutation (to the log, in this case).
  **/
  
-define("fakepipe",["domutils", "mutation"],function(DomUtils, Mutation){
+define("fakepipe",["domutils", "mutation", "address"],function(DomUtils, Mutation, Address){
     return function(mynode)
     {
         var e = DomUtils.createElementDocument.bind(DomUtils, mynode.ownerDocument);
@@ -28,13 +28,17 @@ define("fakepipe",["domutils", "mutation"],function(DomUtils, Mutation){
         
         var onSubmit = function(evt)
         {
-            var mut = JSON.parse(inputline.value, Mutation.revivify);
+            var mut = Mutation.revivify(JSON.parse(inputline.value));
             textarea.value += "\n<< " + inputline.value;
-            inputline.value = "";
             callback(mut);
-            
+            inputline.value = "";
             evt.preventDefault();
             return false;
+        };
+        
+        this.emitChange = function(mut)
+        {
+            textarea.value += "\n>> " + JSON.stringify(mut);
         };
         
         mynode.appendChild(textarea = e("textarea"));

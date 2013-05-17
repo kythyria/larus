@@ -1,9 +1,11 @@
-.lxe-editcomponent .lxe-char { color: gray; }
+.lxe-editorcontainer .lxe-char { color: gray; }
 
-.lxe-editcomponent .lxe-attrval:before { content: "\""; }
-.lxe-editcomponent .lxe-attrval { color: #0a0; }
-.lxe-editcomponent .lxe-attrval:after { content: "\""; }
+.lxe-editorcontainer .lxe-attrval:before { content: "\""; }
+.lxe-editorcontainer .lxe-attrval { color: #0a0; }
+.lxe-editorcontainer .lxe-attrval:after { content: "\""; }
 
-.lxe-editcomponent .lxe-cursorpresent { background-color: #ccf;}
-.lxe-editcomponent .lxe-selectstart { border-left: 2px solid red; }
-.lxe-editcomponent .lxe-selectend { border-right: 2px solid blue; }
+.lxe-editorcontainer .lxe-cursorpresent { background-color: #ccf;}
+.lxe-editorcontainer .lxe-selectstart { border-left: 2px solid red; }
+.lxe-editorcontainer .lxe-selectend { border-right: 2px solid blue; }
+
+.lxe-editorcontainer .lxe-elementcontent {padding-left: 1em;}

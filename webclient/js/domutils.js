@@ -37,7 +37,7 @@ define("domutils",[],function(){
         
         elemspec.shift();
         
-        if (!(elemspec[0] instanceof Node) && !(elemspec[0] instanceof String))
+        if (!(elemspec[0] instanceof Node) && !(typeof elemspec[0] == "string"))
         {
             for (var j in elemspec[0])
             {
