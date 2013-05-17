@@ -5,22 +5,12 @@ requirejs.config({
     baseUrl: './js'
 });
 
-var app = require('http').createServer(handler)
-var io = require('socket.io').listen(app)
+var express = require('express');
+var app = express.createServer();
+var io = require('socket.io').listen(app);
 var fs = require('fs');
 
-function handler (req, res) {
-  fs.readFile(__dirname + '/demo.html',
-  function (err, data) {
-    if (err) {
-      res.writeHead(500);
-      return res.end('Error loading index.html');
-    }
-
-    res.writeHead(200);
-    res.end(data);
-  });
-}
+app.use(express.static(__dirname));
 
 var changelist = [];
 
@@ -34,3 +24,5 @@ io.sockets.on('connection', function(sock){
         console.log(data);
     });
 });
+
+app.listen(8080);
