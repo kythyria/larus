@@ -24,13 +24,14 @@
  *      representing text nodes.
  */
 
-define([],function(){
+define("domutils",[],function(){
     var ced;
     
     ced = function(doc,name)
     {
+        var args = [].slice.call(arguments);
         var el = doc.createElement(name);
-        var elemspec = arguments.slice(1);
+        var elemspec = args.slice(1);
         
         if(elemspec.length == 1) return el;
         
@@ -40,11 +41,11 @@ define([],function(){
         {
             for (var j in elemspec[0])
             {
-                el.setAttribute(j[0], j[1]);
+                el.setAttribute(j, elemspec[0][j]);
             }
-            arguments.shift();
+            elemspec.shift();
         }
-        arguments.forEach(function(i)
+        elemspec.forEach(function(i)
         {
             if (typeof i == "string") i = doc.createTextNode(i);
             el.appendChild(i)
@@ -55,7 +56,8 @@ define([],function(){
     
     var ce = function(name)
     {
-        ced.apply(this, [document].concat(arguments));
+        var arglist = [document].concat([].slice.call(arguments));
+        return ced.apply(this, arglist);
     }
     
     var keys =

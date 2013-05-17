@@ -1,0 +1,9 @@
+.fp-fakepipe input,
+.fp-fakepipe textarea
+{
+    width: 100%;
+}
+.fp-fakepipe form
+{
+    width: 100%;
+}

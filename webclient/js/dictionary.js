@@ -1,4 +1,4 @@
-define([],function(){
+define("dictionary",[],function(){
     return function()
     {
         var store = {};

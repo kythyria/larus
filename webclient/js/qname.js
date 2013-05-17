@@ -13,15 +13,17 @@
  *      revive(jsn)
  *          Function to pass to JSON.parse to get a QName from its JSON representation.
  **/
-define([],function(){
+define("qname",[],function(){
     var QName = function(namespace, localname)
     {
         this.__defineGetter__("namespace",function(){return namespace;});
         this.__defineGetter__("localname",function(){return localname;});
-    }
+    };
     
-    QName.revive = function(jsn)
+    QName.revivify = function(jsn)
     {
         return new QName(jsn.namespace, jsn.localname);
-    }
+    };
+    
+    return QName;
 });

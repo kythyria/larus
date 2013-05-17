@@ -30,7 +30,7 @@
  *   
  */
  
-define(["dictionary","domutils","contextmenu","address","qname"], function(Dictionary,DomUtils,ContextMenu,Address,Qname) {
+define("editcomponent",["dictionary","domutils","contextmenu","address","qname"], function(Dictionary,DomUtils,ContextMenu,Address,Qname) {
     var e = DomUtils.createElement;
     
     var LxeQname = function(editor, name)
@@ -50,7 +50,7 @@ define(["dictionary","domutils","contextmenu","address","qname"], function(Dicti
         
         lpnode = e("span",{"class":"lxe-localname"}, name.localname);
         
-        this.__defineGetter("node",function(){return mynode;});
+        this.__defineGetter__("node",function(){return mynode;});
     };
     
     var LxeAttribute = function(editor, elem, name, initialValue)
@@ -128,7 +128,7 @@ define(["dictionary","domutils","contextmenu","address","qname"], function(Dicti
         };
         
         mynode = e("span", {class: "lxe-attribute", "data-name-prefix": name.namespace, "data-name-localname": name.localname});
-        mynode.addEventHandler("click",onClick)
+        mynode.addEventListener("click",onClick)
         
         qname = new LxeQname(editor, name);
         
@@ -155,7 +155,7 @@ define(["dictionary","domutils","contextmenu","address","qname"], function(Dicti
     {
         var mynode, tago, etag, qname, tagc;
         
-        qname = new LxeQname(name);
+        qname = new LxeQname(editor, name);
         
         mynode = e("span", {class: "lxe-endtag"},
             tago = e("span",{class:"lxe-tago"},"<"),
@@ -244,11 +244,11 @@ define(["dictionary","domutils","contextmenu","address","qname"], function(Dicti
         };
         
         
-        qname = new LxeQname(name);
+        qname = new LxeQname(editor, name);
         tago = e("span",{class:"lxe-tago"},"<");
         tagc = e("span",{class:"lxe-tagc"},">");
         mynode = e("span",{class:"lxe-starttag"}, tago, qname.node, tagc);
-        mynode.addEventHandler("click", onClick);
+        mynode.addEventListener("click", onClick);
         
         this.__defineGetter__("node", function(){return mynode;});
         this.__defineGetter__("attributes", function(){return attributes;});
@@ -258,7 +258,7 @@ define(["dictionary","domutils","contextmenu","address","qname"], function(Dicti
     var LxeCharacter = function(editor, parent, char)
     {
         var myIndex;
-        var mynode = e("span",char);
+        var mynode = e("span",{class: "lxe-char"}, char);
         
         var removeFromDocument = function()
         {
@@ -511,7 +511,7 @@ define(["dictionary","domutils","contextmenu","address","qname"], function(Dicti
         
         starttag = new LxeStartTag(editor, this, name);
         contenttag = e("div", {class: "lxe-elementcontent"});
-        endtag = LxeEndTag(editor, this, name);
+        endtag = new LxeEndTag(editor, this, name);
         mynode = e("div", {class: "lxe-element"}, starttag.node, contenttag, endtag.node);
         
         this.handleChange = onMutationEvent;
@@ -523,7 +523,7 @@ define(["dictionary","domutils","contextmenu","address","qname"], function(Dicti
         this.unmarkStart = unmarkStart;
         this.unmarkEnd = unmarkEnd;
         this.childNode = childNode;
-        this.__defineGetter("childCount", childCount);
+        this.__defineGetter__("childCount", childCount);
         this.__defineGetter__("myIndex", function(){return myIndex;});
         this.__defineSetter__("myIndex", function(val){myIndex = val; return val});
         this.__defineGetter__("address", getAddress);
@@ -579,8 +579,6 @@ define(["dictionary","domutils","contextmenu","address","qname"], function(Dicti
      * 
      *      d to delete the selection (or the current item if no selection).
      * 
-     * Note that the editor swaps the start and end of selection if otherwise end would be before start.
-     * After all, the alternative would be to reject them entirely.
      ****/
      
     return function(editorElem)
@@ -687,22 +685,49 @@ define(["dictionary","domutils","contextmenu","address","qname"], function(Dicti
          * Selection control
          **/
         
-        var markStart = function()
+        var markStart = function(position)
         {
-            getNodeObject(selectStart).unmarkStart();
-            getNodeObject(cursorPos).markStart();
-            selectStart = cursorPos.clone();
+            if (arguments.length===0) { markStart(cursorPos); }
+            if (selectStart)
+            {
+                getNodeObject(selectStart).unmarkStart();
+            }
+            getNodeObject(position).markStart();
+            selectStart = position.clone();
+            
+            if(selectEnd && !selectStart.siblingOf(selectEnd))
+            {
+                getNodeObject(selectEnd).unmarkEnd();
+                selectEnd = null;
+            }
         };
         
-        var markEnd = function()
+        var markEnd = function(position)
         {
+            if (arguments.length===0) { markEnd(cursorPos); }
+            if(!selectStart.siblingOf(position))
+            {
+                return;
+            }
+            if (selectEnd)
+            {
+                getNodeObject(selectEnd).unmarkEnd();
+            }
+            getNodeObject(position).markEnd();
+            selectEnd = position.clone();
+        };
+        
+        var clearSelection = function()
+        {
+            getNodeObject(selectStart).unmarkStart();
             getNodeObject(selectEnd).unmarkEnd();
-            getNodeObject(cursorPos).markEnd();
-            selectEnd = cursorPos.clone();
+            
+            selectStart = null;
+            selectEnd = null;
         };
         
         /**
-         * Insert
+         * Insert and append
          **/
          
         var insertText = function()
@@ -729,6 +754,63 @@ define(["dictionary","domutils","contextmenu","address","qname"], function(Dicti
             });
         };
         
+        var appendText = function()
+        {
+            var oldCPos = cursorPos;
+            cursorPos = cursorPos.after(1);
+            insertText();
+            cursorPos = oldCPos;
+        };
+        
+        var appendElement = function()
+        {
+            var oldCPos = cursorPos;
+            cursorPos = cursorPos.after(1);
+            insertElement();
+            cursorPos = oldCPos;
+        };
+        
+        /**
+         * Move and delete
+         **/
+        
+        var deleteStuff = function() //called that because delete is a keyword
+        {
+            if (!selectStart || !selectEnd)
+            {
+                this.emitChange({
+                    type: "delete",
+                    target: selectStart.parent,
+                    position: selectStart.myIndex,
+                    length: selectEnd.myIndex - selectStart.myIndex
+                });
+            }
+            else
+            {
+                this.emitChange({
+                    type: "delete",
+                    target: cursorPos.parent,
+                    position: cursorPos.myIndex,
+                    length: 1
+                });
+            }
+        };
+        
+        var move = function()
+        {
+            if (selectStart && selectEnd)
+            {
+                this.emitChange({
+                    type: "move",
+                    target: selectStart.parent,
+                    position: selectStart.myIndex,
+                    length: selectEnd.myIndex - selectStart.myIndex,
+                    destination: cursorPos.parent,
+                    destPosition: cursorPos.myIndex
+                });
+            }
+        };
+        
         var onKeyPress = function(evt)
         {
             switch(DomUtils.keyEventkey(evt.key))
@@ -752,9 +834,11 @@ define(["dictionary","domutils","contextmenu","address","qname"], function(Dicti
                     markEnd();
                     break;
                 case "R":
-                    
+                    clearSelection();
+                    break;
                 case "M":
-                    
+                    move();
+                    break;
                 case "J":
                     insertText();
                     break;
@@ -762,16 +846,49 @@ define(["dictionary","domutils","contextmenu","address","qname"], function(Dicti
                     insertElement();
                     break;
                 case "U":
-                    
+                    appendText();
+                    break;
+                case "I":
+                    appendElement();
+                    break;
+                case "D":
+                    deleteStuff();
+                    break;
             }
-        }
+        };
+        
+        var setChangePipe = function(newcp)
+        {
+            if (changePipe) {changePipe.handleChange = undefined;}
+            changePipe = newcp;
+            changePipe.handleChange = this.handlechange;
+            return newcp;
+        };
         
         prefixes = new Dictionary();
         
         //Really these should be loaded from a configuration or something.
         prefixes.set("http://www.w3.org/XML/1998/namespace","xml"); //Except for this one, which MUST be present as per the XML namespace spec.
         prefixes.set("http://ns.berigora.net/2013/larus/structural/0","larus");
-        prefixes.set("http://ns.berigora.net/2013/larus/doctype/0","dtd")
+        prefixes.set("http://ns.berigora.net/2013/larus/doctype/0","dtd");
         prefixes.set("http://www.w3.org/1999/xhtml","html");
+        
+        editorElem.classList.add("lxe-editorcontainer");
+        
+        editorElem.addEventListener("keypress",onKeyPress,false);
+        
+        rootElement = new LxeElement(this, null, new Qname("http://ns.berigora.net/2013/larus/structural/0", "root"));
+        editorElem.appendChild(rootElement.node);
+        
+        this.__defineGetter__("changePipe", function(){return changePipe;});
+        this.__defineSetter__("changePipe", function(val){changePipe = val; return val});
+        this.__defineGetter__("selectionStart", function(){return selectStart;});
+        this.__defineSetter__("selectionStart", function(val){markStart(val); return val});
+        this.__defineGetter__("selectionEnd", function(){return selectEnd;});
+        this.__defineSetter__("selectionEnd", function(val){markEnd(val); return val;});
+        this.__defineGetter__("cursorPosition", function(){return cursorPos;});
+        this.__defineSetter__("cursorPosition", function(val){setCursorPosition(val.clone()); return val;});
+        this.__defineGetter__("changePipe", function(){return changePipe;});
+        this.__defineSetter__("changePipe", setChangePipe);
     };
 });

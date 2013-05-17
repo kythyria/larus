@@ -1,4 +1,4 @@
-define(["domutils"],function(DomUtils){
+define("contextmenu",["domutils"],function(DomUtils){
     var e = DomUtils.createElement;
     return {
         show: function(ctx)

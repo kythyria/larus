@@ -84,7 +84,7 @@
  *      insert(-1,item)
  ****/
 
-define([],function(){
+define("rangearray",[],function(){
     return function(manipulator)
     {
         /***

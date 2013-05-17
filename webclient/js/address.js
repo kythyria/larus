@@ -52,7 +52,7 @@
  *      Address(ary)
  *          Construct an Address out of ary, which must be in the format toArray() returns.
  */
- define([],function(){
+ define("address",[],function(){
     var Address = function()
     {
         var components  = arguments[0] ? arguments[0] : [-1];
