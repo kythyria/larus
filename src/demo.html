@@ -1,0 +1,35 @@
+<?xml version="1.0" charset="UTF-8"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+        <title>Editing</title>
+        <link rel="stylesheet" href="css/editor.css"/>
+        <link rel="stylesheet" href="css/fakepipe.css"/>
+        <link rel="stylesheet" href="css/demo.css"/>
+        <script src="js/lib/require.js"></script>
+        <script src="js/address.js"></script>
+        <script src="js/contextmenu.js"></script>"
+        <script src="js/dictionary.js"></script>
+        <script src="js/domutils.js"></script>"
+        <script src="js/editcomponent.js"></script>
+        <script src="js/fakepipe.js"></script>"
+        <script src="js/mutation.js"></script>
+        <script src="js/qname.js"></script>"
+        <script>
+            requirejs.config({baseurl: "js"});
+            requirejs(["editcomponent", "fakepipe"], function(EditComponent,FakePipe)
+                {
+                    var pipe, editor;
+                    pipe = new FakePipe(document.getElementById("pipe"));
+                    editor = new EditComponent(document.getElementById("editor"));
+                    editor.changePipe = pipe;
+                }
+            );
+        </script>
+    </head>
+    <body>
+        <div id="editor"></div>
+        <div id="pipe"></div>
+    </body>
+</html>
